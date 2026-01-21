@@ -13,5 +13,5 @@ echo "🚀 启动服务器..."
 nohup node server.js > server.log 2>&1 &
 
 echo "✅ 服务器已在后台启动"
-echo "📊 访问地址: http://110.40.153.38:5555/dashboard.html"
+echo "📊 访问地址: http://110.40.153.38:5055/dashboard.html"
 echo "📝 查看日志: tail -f server.log"
