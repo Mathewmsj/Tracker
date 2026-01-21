@@ -1,0 +1,14 @@
+{
+    "name": "analytics-system",
+    "version": "1.0.0",
+    "description": "Lightweight website analytics system MVP",
+    "main": "server.js",
+    "scripts": {
+        "start": "node server.js",
+        "simulate": "node simulate.js"
+    },
+    "dependencies": {
+        "sql.js": "^1.10.2",
+        "express": "^4.18.2"
+    }
+}
