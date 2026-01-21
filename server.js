@@ -321,10 +321,13 @@ app.delete('/api/clear', (req, res) => {
 
 // ============================================
 // Flow API - GET /api/flow (for Sankey diagram)
-// Multi-level flow tracking
+// Multi-level flow tracking with configurable layers
+// Query params: ?maxLayers=5 (default 5, max 10)
 // ============================================
 app.get('/api/flow', (req, res) => {
     try {
+        const maxLayers = Math.min(Math.max(parseInt(req.query.maxLayers) || 5, 1), 10);
+
         // Get all visits ordered by user and time to build session flows
         const visitsResult = db.exec(`
           SELECT uid, url, referrer, timestamp
@@ -334,7 +337,7 @@ app.get('/api/flow', (req, res) => {
         `);
 
         if (visitsResult.length === 0) {
-            return res.json({ nodes: [], links: [] });
+            return res.json({ nodes: [], links: [], maxLayers });
         }
 
         // Build user sessions and track page sequences
@@ -352,8 +355,8 @@ app.get('/api/flow', (req, res) => {
 
         Object.values(userSessions).forEach(pages => {
             pages.forEach((page, index) => {
-                // Limit to first 5 steps to avoid too complex diagram
-                if (index >= 5) return;
+                // Respect maxLayers setting
+                if (index >= maxLayers) return;
 
                 let source, target;
                 const stepNum = index + 1;
@@ -388,7 +391,7 @@ app.get('/api/flow', (req, res) => {
 
         Object.entries(transitionCounts)
             .sort((a, b) => b[1] - a[1])
-            .slice(0, 80) // Limit links
+            .slice(0, 100) // Limit links
             .forEach(([key, value]) => {
                 const [source, target] = key.split('|||');
                 nodesSet.add(source);
@@ -407,7 +410,7 @@ app.get('/api/flow', (req, res) => {
         nodesList.sort((a, b) => getNodeOrder(a) - getNodeOrder(b));
         const nodes = nodesList.map(name => ({ name }));
 
-        res.json({ nodes, links });
+        res.json({ nodes, links, maxLayers, totalSessions: Object.keys(userSessions).length });
 
     } catch (error) {
         console.error('❌ Error fetching flow:', error);

@@ -476,23 +476,41 @@
 
   <script>
     let trendChart = null, hourlyChart = null, sankeyChart = null;
+    let currentLayers = 5;
+    let cachedStats = null, cachedVisitors = null;
 
     async function loadStats() {
       try {
         const [statsRes, flowRes, visitorsRes] = await Promise.all([
           fetch('/api/stats'),
-          fetch('/api/flow'),
+          fetch(`/api/flow?maxLayers=${currentLayers}`),
           fetch('/api/visitors?limit=30')
         ]);
         if (!statsRes.ok) throw new Error('加载失败');
-        const stats = await statsRes.json();
-        const flow = flowRes.ok ? await flowRes.json() : { nodes: [], links: [] };
-        const visitors = visitorsRes.ok ? await visitorsRes.json() : { visitors: [] };
-        renderDashboard(stats, flow, visitors);
+        cachedStats = await statsRes.json();
+        const flow = flowRes.ok ? await flowRes.json() : { nodes: [], links: [], maxLayers: 5 };
+        cachedVisitors = visitorsRes.ok ? await visitorsRes.json() : { visitors: [] };
+        renderDashboard(cachedStats, flow, cachedVisitors);
         document.getElementById('lastUpdated').textContent = `更新于 ${new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}`;
       } catch (error) {
         document.getElementById('content').innerHTML = `<div class="empty-state"><p>⚠️ ${error.message}</p></div>`;
       }
+    }
+
+    async function reloadSankey(layers) {
+      currentLayers = layers;
+      try {
+        const flowRes = await fetch(`/api/flow?maxLayers=${layers}`);
+        const flow = flowRes.ok ? await flowRes.json() : { nodes: [], links: [] };
+        renderSankey(flow);
+        updateLayerButtons();
+      } catch (e) { console.error(e); }
+    }
+
+    function updateLayerButtons() {
+      document.querySelectorAll('.layer-btn').forEach(btn => {
+        btn.classList.toggle('active', parseInt(btn.dataset.layers) === currentLayers);
+      });
     }
 
     function renderDashboard(data, flow, visitorsData) {
@@ -513,7 +531,13 @@
         </div>
 
         <div class="card" style="margin-bottom:2rem">
-          <div class="chart-header"><h3>🌊 用户行为流向</h3><span class="badge">桑基图</span></div>
+          <div class="chart-header">
+            <h3>🌊 用户行为流向</h3>
+            <div style="display:flex;gap:0.5rem;align-items:center">
+              <span style="font-size:0.7rem;color:var(--text-3)">层数:</span>
+              ${[1, 2, 3, 4, 5, 6, 7, 8].map(n => `<button class="btn layer-btn ${n === currentLayers ? 'active' : ''}" data-layers="${n}" onclick="reloadSankey(${n})" style="padding:0.3rem 0.6rem;font-size:0.7rem;min-width:28px;background:${n === currentLayers ? 'var(--accent-2)' : 'var(--bg-card)'};color:${n === currentLayers ? '#000' : 'var(--text-2)'};border:1px solid var(--border);border-radius:6px">${n}</button>`).join('')}
+            </div>
+          </div>
           <div id="sankeyChart"></div>
         </div>
 
