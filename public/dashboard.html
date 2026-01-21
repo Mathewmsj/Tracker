@@ -4,31 +4,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>数据分析仪表盘</title>
+  <title>流量分析 · Analytics</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
     rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
   <style>
     :root {
-      --bg-gradient-start: #0c0a20;
-      --bg-gradient-mid: #1a103d;
-      --bg-gradient-end: #0f172a;
-      --glass-bg: rgba(255, 255, 255, 0.03);
-      --glass-border: rgba(255, 255, 255, 0.08);
-      --glass-hover: rgba(255, 255, 255, 0.06);
-      --accent-primary: #8b5cf6;
-      --accent-secondary: #06b6d4;
-      --accent-tertiary: #f472b6;
-      --accent-success: #10b981;
-      --accent-warning: #f59e0b;
-      --text-primary: #f8fafc;
-      --text-secondary: #94a3b8;
-      --text-tertiary: #64748b;
-      --shadow-glow: 0 0 60px rgba(139, 92, 246, 0.15);
-      --shadow-card: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      --bg-dark: #0a0a0f;
+      --bg-card: rgba(20, 20, 30, 0.6);
+      --border: rgba(255, 255, 255, 0.06);
+      --accent-1: #ff6b6b;
+      --accent-2: #4ecdc4;
+      --accent-3: #ffe66d;
+      --accent-4: #95e1d3;
+      --text-1: #ffffff;
+      --text-2: rgba(255, 255, 255, 0.6);
+      --text-3: rgba(255, 255, 255, 0.3);
+      --glow-1: rgba(255, 107, 107, 0.4);
+      --glow-2: rgba(78, 205, 196, 0.4);
     }
 
     * {
@@ -38,323 +33,214 @@
     }
 
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-mid) 50%, var(--bg-gradient-end) 100%);
-      color: var(--text-primary);
+      font-family: 'Space Grotesk', -apple-system, sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-1);
       min-height: 100vh;
       overflow-x: hidden;
-      position: relative;
     }
 
-    /* Animated background orbs */
-    body::before,
-    body::after {
-      content: '';
+    /* Animated gradient mesh background */
+    .bg-mesh {
       position: fixed;
-      border-radius: 50%;
-      filter: blur(100px);
-      opacity: 0.4;
+      inset: 0;
       z-index: 0;
-      animation: float 20s ease-in-out infinite;
+      background:
+        radial-gradient(ellipse 80% 50% at 20% 40%, rgba(255, 107, 107, 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse 60% 40% at 80% 20%, rgba(78, 205, 196, 0.12) 0%, transparent 50%),
+        radial-gradient(ellipse 50% 60% at 60% 80%, rgba(255, 230, 109, 0.08) 0%, transparent 50%);
+      animation: meshFloat 30s ease-in-out infinite;
     }
 
-    body::before {
-      width: 600px;
-      height: 600px;
-      background: radial-gradient(circle, var(--accent-primary) 0%, transparent 70%);
-      top: -200px;
-      right: -200px;
-    }
-
-    body::after {
-      width: 500px;
-      height: 500px;
-      background: radial-gradient(circle, var(--accent-secondary) 0%, transparent 70%);
-      bottom: -150px;
-      left: -150px;
-      animation-delay: -10s;
-    }
-
-    @keyframes float {
+    @keyframes meshFloat {
 
       0%,
       100% {
-        transform: translate(0, 0) scale(1);
-      }
-
-      25% {
-        transform: translate(30px, -30px) scale(1.05);
+        filter: blur(60px) brightness(1);
       }
 
       50% {
-        transform: translate(-20px, 20px) scale(0.95);
-      }
-
-      75% {
-        transform: translate(-30px, -20px) scale(1.02);
+        filter: blur(80px) brightness(1.2);
       }
     }
 
-    .container {
-      max-width: 1440px;
-      margin: 0 auto;
-      padding: 2rem;
-      position: relative;
+    .noise {
+      position: fixed;
+      inset: 0;
       z-index: 1;
+      opacity: 0.03;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      pointer-events: none;
+    }
+
+    .container {
+      position: relative;
+      z-index: 2;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 3rem 2rem;
     }
 
     /* Header */
     header {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      margin-bottom: 2.5rem;
-      padding-bottom: 1.5rem;
-      border-bottom: 1px solid var(--glass-border);
+      align-items: flex-end;
+      margin-bottom: 4rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
     }
 
-    .logo-section {
+    .brand {
       display: flex;
-      align-items: center;
-      gap: 1rem;
+      flex-direction: column;
+      gap: 0.5rem;
     }
 
-    .logo-icon {
-      width: 48px;
-      height: 48px;
-      background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-tertiary) 100%);
-      border-radius: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.5rem;
-      box-shadow: 0 8px 24px rgba(139, 92, 246, 0.4);
-    }
-
-    .logo-text h1 {
-      font-size: 1.5rem;
+    .brand h1 {
+      font-size: 2.5rem;
       font-weight: 700;
-      letter-spacing: -0.02em;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, var(--text-1) 0%, var(--text-2) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
 
-    .logo-text p {
-      font-size: 0.75rem;
-      color: var(--text-secondary);
-      letter-spacing: 0.1em;
+    .brand p {
+      font-size: 0.875rem;
+      color: var(--text-3);
+      letter-spacing: 0.2em;
       text-transform: uppercase;
     }
 
-    .header-actions {
+    .live-indicator {
       display: flex;
       align-items: center;
-      gap: 1rem;
-    }
-
-    .status-badge {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.5rem 1rem;
-      background: var(--glass-bg);
-      border: 1px solid var(--glass-border);
+      gap: 0.75rem;
+      padding: 0.75rem 1.5rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
       border-radius: 100px;
-      font-size: 0.8rem;
-      color: var(--text-secondary);
+      backdrop-filter: blur(20px);
     }
 
-    .status-dot {
+    .pulse {
       width: 8px;
       height: 8px;
-      background: var(--accent-success);
+      background: var(--accent-2);
       border-radius: 50%;
-      animation: pulse-dot 2s ease-in-out infinite;
+      animation: pulse 2s ease infinite;
     }
 
-    @keyframes pulse-dot {
+    @keyframes pulse {
 
       0%,
       100% {
-        opacity: 1;
-        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5);
+        box-shadow: 0 0 0 0 var(--glow-2);
       }
 
       50% {
-        opacity: 0.8;
-        box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+        box-shadow: 0 0 0 12px transparent;
       }
     }
 
-    .refresh-btn {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.75rem 1.25rem;
-      background: linear-gradient(135deg, var(--accent-primary) 0%, #7c3aed 100%);
-      border: none;
-      border-radius: 12px;
-      color: white;
-      font-size: 0.875rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 4px 16px rgba(139, 92, 246, 0.4);
-    }
-
-    .refresh-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(139, 92, 246, 0.5);
-    }
-
-    .refresh-btn:active {
-      transform: translateY(0);
-    }
-
-    /* Stats Grid */
-    .stats-grid {
+    /* Stats Grid - Bento Style */
+    .bento {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: auto auto;
       gap: 1.5rem;
-      margin-bottom: 2rem;
+      margin-bottom: 3rem;
     }
 
-    @media (max-width: 1200px) {
-      .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 2rem;
+      backdrop-filter: blur(40px);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
     }
 
-    @media (max-width: 640px) {
-      .stats-grid {
-        grid-template-columns: 1fr;
-      }
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(255, 255, 255, 0.12);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
     }
 
     .stat-card {
-      background: var(--glass-bg);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid var(--glass-border);
-      border-radius: 20px;
-      padding: 1.5rem;
-      position: relative;
-      overflow: hidden;
-      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .stat-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, var(--card-accent, var(--accent-primary)), transparent);
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-
-    .stat-card:hover {
-      transform: translateY(-4px);
-      background: var(--glass-hover);
-      box-shadow: var(--shadow-card);
-    }
-
-    .stat-card:hover::before {
-      opacity: 1;
-    }
-
-    .stat-card:nth-child(1) {
-      --card-accent: var(--accent-primary);
-    }
-
-    .stat-card:nth-child(2) {
-      --card-accent: var(--accent-secondary);
-    }
-
-    .stat-card:nth-child(3) {
-      --card-accent: var(--accent-tertiary);
-    }
-
-    .stat-card:nth-child(4) {
-      --card-accent: var(--accent-success);
-    }
-
-    .stat-header {
       display: flex;
+      flex-direction: column;
       justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 1rem;
+      min-height: 160px;
     }
 
-    .stat-icon {
-      width: 44px;
-      height: 44px;
-      background: linear-gradient(135deg, var(--card-accent, var(--accent-primary)) 0%, transparent 100%);
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.25rem;
+    .stat-card .label {
+      font-size: 0.75rem;
+      color: var(--text-3);
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      margin-bottom: 0.5rem;
     }
 
-    .stat-trend {
-      display: flex;
+    .stat-card .value {
+      font-size: 3.5rem;
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+
+    .stat-card:nth-child(1) .value {
+      color: var(--accent-1);
+      text-shadow: 0 0 40px var(--glow-1);
+    }
+
+    .stat-card:nth-child(2) .value {
+      color: var(--accent-2);
+      text-shadow: 0 0 40px var(--glow-2);
+    }
+
+    .stat-card:nth-child(3) .value {
+      color: var(--accent-3);
+    }
+
+    .stat-card:nth-child(4) .value {
+      color: var(--accent-4);
+    }
+
+    .stat-card .trend {
+      display: inline-flex;
       align-items: center;
       gap: 0.25rem;
+      font-size: 0.8rem;
       padding: 0.25rem 0.5rem;
       border-radius: 6px;
-      font-size: 0.75rem;
-      font-weight: 600;
+      width: fit-content;
     }
 
-    .stat-trend.up {
-      background: rgba(16, 185, 129, 0.15);
-      color: var(--accent-success);
+    .trend.up {
+      background: rgba(78, 205, 196, 0.15);
+      color: var(--accent-2);
     }
 
-    .stat-trend.down {
-      background: rgba(239, 68, 68, 0.15);
-      color: #ef4444;
+    .trend.down {
+      background: rgba(255, 107, 107, 0.15);
+      color: var(--accent-1);
     }
 
-    .stat-value {
-      font-size: 2.5rem;
-      font-weight: 800;
-      line-height: 1;
-      margin-bottom: 0.5rem;
-      background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .stat-label {
-      font-size: 0.875rem;
-      color: var(--text-secondary);
-    }
-
-    /* Charts Section */
-    .charts-row {
-      display: grid;
-      grid-template-columns: 2fr 1fr;
-      gap: 1.5rem;
-      margin-bottom: 2rem;
-    }
-
-    @media (max-width: 1024px) {
-      .charts-row {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .chart-card {
-      background: var(--glass-bg);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid var(--glass-border);
-      border-radius: 20px;
-      padding: 1.5rem;
-      overflow: hidden;
+    /* Chart Cards */
+    .chart-area {
+      grid-column: span 2;
     }
 
     .chart-header {
@@ -364,87 +250,71 @@
       margin-bottom: 1.5rem;
     }
 
-    .chart-title {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-
-    .chart-title h3 {
-      font-size: 1.125rem;
-      font-weight: 600;
-    }
-
-    .chart-badge {
-      padding: 0.25rem 0.75rem;
-      background: rgba(139, 92, 246, 0.15);
-      border-radius: 100px;
-      font-size: 0.75rem;
-      color: var(--accent-primary);
+    .chart-header h3 {
+      font-size: 1rem;
       font-weight: 500;
+      color: var(--text-2);
     }
 
-    .chart-legend {
-      display: flex;
-      gap: 1rem;
-    }
-
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.8rem;
-      color: var(--text-secondary);
-    }
-
-    .legend-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
+    .chart-header .badge {
+      font-size: 0.7rem;
+      padding: 0.25rem 0.75rem;
+      background: rgba(255, 107, 107, 0.15);
+      color: var(--accent-1);
+      border-radius: 100px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
     }
 
     .chart-container {
-      position: relative;
-      height: 280px;
+      height: 250px;
     }
 
-    /* Tables Section */
+    /* Sankey Section */
+    .sankey-section {
+      margin-bottom: 3rem;
+    }
+
+    .sankey-section .card {
+      padding: 2.5rem;
+    }
+
+    .sankey-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    .sankey-header h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    .sankey-header .subtitle {
+      color: var(--text-3);
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+    }
+
+    #sankeyChart {
+      height: 450px;
+    }
+
+    /* Tables Grid */
     .tables-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 1.5rem;
     }
 
-    @media (max-width: 900px) {
-      .tables-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .table-card {
-      background: var(--glass-bg);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid var(--glass-border);
-      border-radius: 20px;
-      padding: 1.5rem;
-    }
-
-    .table-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1rem;
-      padding-bottom: 1rem;
-      border-bottom: 1px solid var(--glass-border);
-    }
-
-    .table-header h3 {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
+    .table-card h3 {
       font-size: 1rem;
-      font-weight: 600;
+      font-weight: 500;
+      color: var(--text-2);
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
     }
 
     table {
@@ -452,123 +322,119 @@
       border-collapse: collapse;
     }
 
-    th {
-      text-align: left;
-      padding: 0.75rem 0;
-      font-size: 0.7rem;
-      font-weight: 600;
-      color: var(--text-tertiary);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      border-bottom: 1px solid var(--glass-border);
-    }
-
-    td {
-      padding: 0.875rem 0;
-      font-size: 0.875rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-    }
-
-    tr:last-child td {
-      border-bottom: none;
-    }
-
     tr {
-      transition: background 0.2s ease;
+      transition: background 0.2s;
     }
 
     tbody tr:hover {
       background: rgba(255, 255, 255, 0.02);
     }
 
-    .url-cell {
+    th,
+    td {
+      padding: 1rem 0;
+      text-align: left;
+    }
+
+    th {
+      font-size: 0.65rem;
+      color: var(--text-3);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-weight: 500;
+    }
+
+    td {
+      font-size: 0.9rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    .page-cell {
       display: flex;
       align-items: center;
       gap: 0.75rem;
-      max-width: 240px;
     }
 
-    .url-icon {
-      width: 32px;
-      height: 32px;
-      background: var(--glass-bg);
-      border: 1px solid var(--glass-border);
-      border-radius: 8px;
+    .page-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 0.875rem;
-      flex-shrink: 0;
+      font-size: 1rem;
     }
 
-    .url-text {
+    .page-url {
+      max-width: 200px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      color: var(--text-primary);
     }
 
-    .count-badge {
+    .count-pill {
       display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 48px;
-      padding: 0.375rem 0.75rem;
-      background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(6, 182, 212, 0.2) 100%);
-      border: 1px solid rgba(139, 92, 246, 0.3);
+      padding: 0.4rem 0.8rem;
+      background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), rgba(78, 205, 196, 0.1));
+      border: 1px solid var(--border);
       border-radius: 8px;
-      font-size: 0.8rem;
       font-weight: 600;
-      color: var(--text-primary);
+      font-size: 0.85rem;
     }
 
-    .rank-badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
+    .rank {
       width: 24px;
       height: 24px;
       border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-size: 0.75rem;
       font-weight: 700;
     }
 
     .rank-1 {
-      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-      color: #1a1a1a;
+      background: linear-gradient(135deg, #ffd700, #ffb347);
+      color: #000;
     }
 
     .rank-2 {
-      background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%);
-      color: #1a1a1a;
+      background: linear-gradient(135deg, #c0c0c0, #a8a8a8);
+      color: #000;
     }
 
     .rank-3 {
-      background: linear-gradient(135deg, #cd7c3a 0%, #b45309 100%);
-      color: #1a1a1a;
+      background: linear-gradient(135deg, #cd7f32, #b8860b);
+      color: #000;
     }
 
-    .rank-other {
-      background: var(--glass-bg);
-      border: 1px solid var(--glass-border);
-      color: var(--text-tertiary);
+    .rank-n {
+      background: var(--bg-card);
+      color: var(--text-3);
+      border: 1px solid var(--border);
     }
 
-    /* Loading State */
+    /* Loading */
     .loading {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 6rem 2rem;
-      gap: 1.5rem;
+      min-height: 60vh;
+      gap: 2rem;
     }
 
-    .loading-spinner {
+    .loader {
       width: 48px;
       height: 48px;
-      border: 3px solid var(--glass-border);
-      border-top-color: var(--accent-primary);
+      border: 2px solid var(--border);
+      border-top-color: var(--accent-1);
       border-radius: 50%;
       animation: spin 1s linear infinite;
     }
@@ -579,270 +445,194 @@
       }
     }
 
-    .loading-text {
-      color: var(--text-secondary);
-      font-size: 0.9rem;
-    }
-
-    /* Error State */
-    .error {
-      background: rgba(239, 68, 68, 0.1);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      padding: 1.5rem;
-      border-radius: 16px;
-      color: #fca5a5;
-      text-align: center;
-    }
-
     /* Empty State */
     .empty-state {
       text-align: center;
-      padding: 2rem;
-      color: var(--text-tertiary);
+      padding: 3rem;
+      color: var(--text-3);
     }
 
-    .empty-state-icon {
-      font-size: 2rem;
-      margin-bottom: 0.5rem;
+    .empty-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
       opacity: 0.5;
     }
 
-    /* Progress bar for hourly */
-    .progress-bar-container {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
+    /* Responsive */
+    @media (max-width: 1200px) {
+      .bento {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .chart-area {
+        grid-column: span 2;
+      }
     }
 
-    .progress-bar {
-      flex: 1;
-      height: 6px;
-      background: var(--glass-bg);
-      border-radius: 3px;
-      overflow: hidden;
-    }
+    @media (max-width: 768px) {
+      .bento {
+        grid-template-columns: 1fr;
+      }
 
-    .progress-bar-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
-      border-radius: 3px;
-      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      .chart-area {
+        grid-column: span 1;
+      }
+
+      .tables-grid {
+        grid-template-columns: 1fr;
+      }
+
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1.5rem;
+      }
     }
   </style>
 </head>
 
 <body>
+  <div class="bg-mesh"></div>
+  <div class="noise"></div>
+
   <div class="container">
     <header>
-      <div class="logo-section">
-        <div class="logo-icon">📊</div>
-        <div class="logo-text">
-          <h1>数据分析平台</h1>
-          <p>实时流量监控</p>
-        </div>
+      <div class="brand">
+        <h1>Analytics</h1>
+        <p>Real-time Traffic Insights</p>
       </div>
-      <div class="header-actions">
-        <div class="status-badge">
-          <span class="status-dot"></span>
-          <span id="lastUpdated">正在加载...</span>
-        </div>
-        <button class="refresh-btn" onclick="loadStats()">
-          <span>🔄</span>
-          <span>刷新数据</span>
-        </button>
+      <div class="live-indicator">
+        <span class="pulse"></span>
+        <span id="lastUpdated">连接中...</span>
       </div>
     </header>
 
     <div id="content">
       <div class="loading">
-        <div class="loading-spinner"></div>
-        <div class="loading-text">正在加载分析数据...</div>
+        <div class="loader"></div>
+        <p style="color: var(--text-3)">加载数据中...</p>
       </div>
     </div>
   </div>
 
   <script>
-    let trendChart = null;
-    let hourlyChart = null;
+    let trendChart = null, hourlyChart = null, sankeyChart = null;
 
     async function loadStats() {
-      const content = document.getElementById('content');
-
       try {
-        const response = await fetch('/api/stats');
-        if (!response.ok) throw new Error('获取数据失败');
+        const [statsRes, flowRes] = await Promise.all([
+          fetch('/api/stats'),
+          fetch('/api/flow')
+        ]);
 
-        const data = await response.json();
-        renderDashboard(data);
+        if (!statsRes.ok) throw new Error('加载失败');
 
+        const stats = await statsRes.json();
+        const flow = flowRes.ok ? await flowRes.json() : { nodes: [], links: [] };
+
+        renderDashboard(stats, flow);
         document.getElementById('lastUpdated').textContent =
           `更新于 ${new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}`;
-
       } catch (error) {
-        content.innerHTML = `
-          <div class="error">
-            <p style="font-size: 1.25rem; margin-bottom: 0.5rem;">❌ 数据加载失败</p>
+        document.getElementById('content').innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">⚠️</div>
             <p>${error.message}</p>
-            <p style="margin-top: 0.5rem; font-size: 0.8rem; opacity: 0.7;">请确保服务器正在运行</p>
           </div>
         `;
       }
     }
 
-    function renderDashboard(data) {
-      const content = document.getElementById('content');
-      const avgViews = data.uv > 0 ? (data.pv / data.uv).toFixed(1) : '0';
-      const bounceRate = data.uv > 0 ? Math.max(10, 100 - (data.pv / data.uv * 15)).toFixed(1) : '0';
+    function renderDashboard(data, flow) {
+      const avgDepth = data.uv > 0 ? (data.pv / data.uv).toFixed(1) : '0';
+      const bounceRate = data.uv > 0 ? Math.max(15, 100 - (data.pv / data.uv * 12)).toFixed(1) : '0';
 
-      content.innerHTML = `
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-header">
-              <div class="stat-icon">👁️</div>
-              <div class="stat-trend up">↑ 12.5%</div>
+      document.getElementById('content').innerHTML = `
+        <div class="bento">
+          <div class="card stat-card">
+            <div>
+              <div class="label">页面浏览量</div>
+              <div class="value">${formatNum(data.pv)}</div>
             </div>
-            <div class="stat-value">${formatNumber(data.pv)}</div>
-            <div class="stat-label">页面浏览量 (PV)</div>
+            <div class="trend up">↑ 12.5%</div>
           </div>
-          <div class="stat-card">
-            <div class="stat-header">
-              <div class="stat-icon">👤</div>
-              <div class="stat-trend up">↑ 8.3%</div>
+          <div class="card stat-card">
+            <div>
+              <div class="label">独立访客</div>
+              <div class="value">${formatNum(data.uv)}</div>
             </div>
-            <div class="stat-value">${formatNumber(data.uv)}</div>
-            <div class="stat-label">独立访客 (UV)</div>
+            <div class="trend up">↑ 8.2%</div>
           </div>
-          <div class="stat-card">
-            <div class="stat-header">
-              <div class="stat-icon">📈</div>
-              <div class="stat-trend up">↑ 4.2%</div>
+          <div class="card stat-card">
+            <div>
+              <div class="label">访问深度</div>
+              <div class="value">${avgDepth}</div>
             </div>
-            <div class="stat-value">${avgViews}</div>
-            <div class="stat-label">平均访问深度</div>
+            <div class="trend up">↑ 3.1%</div>
           </div>
-          <div class="stat-card">
-            <div class="stat-header">
-              <div class="stat-icon">⏱️</div>
-              <div class="stat-trend down">↓ 2.1%</div>
+          <div class="card stat-card">
+            <div>
+              <div class="label">跳出率</div>
+              <div class="value">${bounceRate}%</div>
             </div>
-            <div class="stat-value">${bounceRate}%</div>
-            <div class="stat-label">跳出率</div>
+            <div class="trend down">↓ 2.4%</div>
+          </div>
+          
+          <div class="card chart-area">
+            <div class="chart-header">
+              <h3>实时流量趋势</h3>
+              <span class="badge">最近1小时</span>
+            </div>
+            <div class="chart-container"><canvas id="trendChart"></canvas></div>
+          </div>
+          <div class="card chart-area">
+            <div class="chart-header">
+              <h3>今日分时统计</h3>
+            </div>
+            <div class="chart-container"><canvas id="hourlyChart"></canvas></div>
           </div>
         </div>
 
-        <div class="charts-row">
-          <div class="chart-card">
-            <div class="chart-header">
-              <div class="chart-title">
-                <h3>📈 实时流量趋势</h3>
-                <span class="chart-badge">最近一小时</span>
-              </div>
-              <div class="chart-legend">
-                <div class="legend-item">
-                  <span class="legend-dot" style="background: var(--accent-primary)"></span>
-                  页面浏览
-                </div>
+        <div class="sankey-section">
+          <div class="card">
+            <div class="sankey-header">
+              <div>
+                <h2>用户行为流向</h2>
+                <p class="subtitle">可视化用户在站点内的导航路径</p>
               </div>
             </div>
-            <div class="chart-container">
-              <canvas id="trendChart"></canvas>
-            </div>
+            <div id="sankeyChart"></div>
           </div>
-          <div class="chart-card">
-            <div class="chart-header">
-              <div class="chart-title">
-                <h3>🕐 今日分时统计</h3>
-              </div>
-            </div>
-            <div class="chart-container">
-              <canvas id="hourlyChart"></canvas>
-            </div>
-          </div>
-        </div>
-
-        <div class="chart-card" style="margin-bottom: 2rem;">
-          <div class="chart-header">
-            <div class="chart-title">
-              <h3>🌊 用户行为流向</h3>
-              <span class="chart-badge">桑基图</span>
-            </div>
-          </div>
-          <div id="sankeyChart" style="height: 400px;"></div>
         </div>
 
         <div class="tables-grid">
-          <div class="table-card">
-            <div class="table-header">
-              <h3>🔥 热门页面</h3>
-            </div>
+          <div class="card table-card">
+            <h3>🔥 热门页面</h3>
             <table>
-              <thead>
-                <tr>
-                  <th style="width: 40px">排名</th>
-                  <th>页面路径</th>
-                  <th style="text-align: right">浏览量</th>
-                </tr>
-              </thead>
+              <thead><tr><th>排名</th><th>页面</th><th style="text-align:right">浏览量</th></tr></thead>
               <tbody>
-                ${data.topPages.length > 0 ? data.topPages.map((page, i) => `
+                ${data.topPages.length ? data.topPages.slice(0, 6).map((p, i) => `
                   <tr>
-                    <td><span class="rank-badge ${i < 3 ? `rank-${i + 1}` : 'rank-other'}">${i + 1}</span></td>
-                    <td>
-                      <div class="url-cell">
-                        <span class="url-icon">${getPageIcon(page.url)}</span>
-                        <span class="url-text" title="${page.url}">${page.url}</span>
-                      </div>
-                    </td>
-                    <td style="text-align: right"><span class="count-badge">${page.count}</span></td>
+                    <td><span class="rank ${i < 3 ? 'rank-' + (i + 1) : 'rank-n'}">${i + 1}</span></td>
+                    <td><div class="page-cell"><span class="page-icon">${getIcon(p.url)}</span><span class="page-url" title="${p.url}">${p.url}</span></div></td>
+                    <td style="text-align:right"><span class="count-pill">${p.count}</span></td>
                   </tr>
-                `).join('') : `
-                  <tr>
-                    <td colspan="3">
-                      <div class="empty-state">
-                        <div class="empty-state-icon">📭</div>
-                        <div>暂无数据</div>
-                      </div>
-                    </td>
-                  </tr>
-                `}
+                `).join('') : '<tr><td colspan="3"><div class="empty-state"><div class="empty-icon">📭</div><p>暂无数据</p></div></td></tr>'}
               </tbody>
             </table>
           </div>
-          
-          <div class="table-card">
-            <div class="table-header">
-              <h3>🔗 流量来源</h3>
-            </div>
+          <div class="card table-card">
+            <h3>🔗 流量来源</h3>
             <table>
-              <thead>
-                <tr>
-                  <th style="width: 40px">排名</th>
-                  <th>来源</th>
-                  <th style="text-align: right">访问量</th>
-                </tr>
-              </thead>
+              <thead><tr><th>排名</th><th>来源</th><th style="text-align:right">访问量</th></tr></thead>
               <tbody>
-                ${data.topReferrers.length > 0 ? data.topReferrers.map((ref, i) => `
+                ${data.topReferrers.length ? data.topReferrers.slice(0, 6).map((r, i) => `
                   <tr>
-                    <td><span class="rank-badge ${i < 3 ? `rank-${i + 1}` : 'rank-other'}">${i + 1}</span></td>
-                    <td>
-                      <div class="url-cell">
-                        <span class="url-icon">${getReferrerIcon(ref.referrer)}</span>
-                        <span class="url-text" title="${ref.referrer}">${formatReferrer(ref.referrer)}</span>
-                      </div>
-                    </td>
-                    <td style="text-align: right"><span class="count-badge">${ref.count}</span></td>
+                    <td><span class="rank ${i < 3 ? 'rank-' + (i + 1) : 'rank-n'}">${i + 1}</span></td>
+                    <td><div class="page-cell"><span class="page-icon">${getRefIcon(r.referrer)}</span><span class="page-url">${formatRef(r.referrer)}</span></div></td>
+                    <td style="text-align:right"><span class="count-pill">${r.count}</span></td>
                   </tr>
-                `).join('') : `
-                  <tr>
-                    <td colspan="3">
-                      <div class="empty-state">
-                        <div class="empty-state-icon">📭</div>
-                        <div>暂无数据</div>
-                      </div>
-                    </td>
-                  </tr>
-                `}
+                `).join('') : '<tr><td colspan="3"><div class="empty-state"><div class="empty-icon">📭</div><p>暂无数据</p></div></td></tr>'}
               </tbody>
             </table>
           </div>
@@ -851,258 +641,150 @@
 
       renderTrendChart(data.minuteTrend);
       renderHourlyChart(data.hourlyTrend);
-      loadFlowData();
+      renderSankey(flow);
     }
 
-    async function loadFlowData() {
-      try {
-        const response = await fetch('/api/flow');
-        if (!response.ok) return;
-        const data = await response.json();
-        renderSankeyChart(data);
-      } catch (e) {
-        console.error('Failed to load flow data:', e);
-      }
-    }
-
-    let sankeyChart = null;
-    function renderSankeyChart(data) {
-      const container = document.getElementById('sankeyChart');
-      if (!container) return;
-
-      if (sankeyChart) sankeyChart.dispose();
-      sankeyChart = echarts.init(container);
-
-      // Color palette
-      const colors = [
-        '#8b5cf6', '#06b6d4', '#f472b6', '#10b981', '#f59e0b',
-        '#6366f1', '#ec4899', '#14b8a6', '#eab308', '#a855f7'
-      ];
-
-      const option = {
-        tooltip: {
-          trigger: 'item',
-          triggerOn: 'mousemove',
-          backgroundColor: 'rgba(15, 15, 35, 0.95)',
-          borderColor: 'rgba(255, 255, 255, 0.1)',
-          borderWidth: 1,
-          textStyle: { color: '#f8fafc' },
-          formatter: function (params) {
-            if (params.dataType === 'edge') {
-              return `<strong>${params.data.source}</strong> → <strong>${params.data.target}</strong><br/>访问量: ${params.data.value}`;
-            }
-            return `<strong>${params.name}</strong>`;
-          }
-        },
-        series: [{
-          type: 'sankey',
-          layout: 'none',
-          emphasis: {
-            focus: 'adjacency'
-          },
-          nodeAlign: 'left',
-          lineStyle: {
-            color: 'gradient',
-            curveness: 0.5,
-            opacity: 0.4
-          },
-          itemStyle: {
-            borderWidth: 0,
-            borderRadius: 4
-          },
-          label: {
-            color: '#f8fafc',
-            fontSize: 12,
-            fontWeight: 500
-          },
-          data: data.nodes.map((node, i) => ({
-            ...node,
-            itemStyle: { color: colors[i % colors.length] }
-          })),
-          links: data.links
-        }]
-      };
-
-      sankeyChart.setOption(option);
-
-      // Responsive
-      window.addEventListener('resize', () => sankeyChart.resize());
-    }
-
-    function renderTrendChart(trendData) {
-      const ctx = document.getElementById('trendChart').getContext('2d');
-
+    function renderTrendChart(trend) {
+      const ctx = document.getElementById('trendChart')?.getContext('2d');
+      if (!ctx) return;
       if (trendChart) trendChart.destroy();
 
-      const labels = trendData.map(d => {
-        const time = d.minute.split(' ')[1];
-        return time || d.minute;
-      });
-
-      const values = trendData.map(d => d.count);
-
-      const gradient = ctx.createLinearGradient(0, 0, 0, 280);
-      gradient.addColorStop(0, 'rgba(139, 92, 246, 0.3)');
-      gradient.addColorStop(1, 'rgba(139, 92, 246, 0)');
+      const gradient = ctx.createLinearGradient(0, 0, 0, 250);
+      gradient.addColorStop(0, 'rgba(255, 107, 107, 0.3)');
+      gradient.addColorStop(1, 'rgba(255, 107, 107, 0)');
 
       trendChart = new Chart(ctx, {
         type: 'line',
         data: {
-          labels,
+          labels: trend.map(d => d.minute?.split(' ')[1] || d.minute),
           datasets: [{
-            label: '页面浏览',
-            data: values,
-            borderColor: '#8b5cf6',
+            data: trend.map(d => d.count),
+            borderColor: '#ff6b6b',
             backgroundColor: gradient,
             fill: true,
             tension: 0.4,
-            pointBackgroundColor: '#8b5cf6',
-            pointBorderColor: '#0f0f23',
-            pointBorderWidth: 2,
-            pointRadius: 4,
-            pointHoverRadius: 6,
-            borderWidth: 3
+            pointRadius: 0,
+            borderWidth: 2
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              backgroundColor: 'rgba(15, 15, 35, 0.9)',
-              titleColor: '#f8fafc',
-              bodyColor: '#94a3b8',
-              borderColor: 'rgba(255, 255, 255, 0.1)',
-              borderWidth: 1,
-              cornerRadius: 8,
-              padding: 12
-            }
-          },
+          plugins: { legend: { display: false } },
           scales: {
-            x: {
-              grid: { color: 'rgba(255, 255, 255, 0.03)' },
-              ticks: { color: '#64748b', maxTicksLimit: 8, font: { size: 11 } }
-            },
-            y: {
-              beginAtZero: true,
-              grid: { color: 'rgba(255, 255, 255, 0.03)' },
-              ticks: { color: '#64748b', font: { size: 11 } }
-            }
-          },
-          interaction: { intersect: false, mode: 'index' }
+            x: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: 'rgba(255,255,255,0.3)', maxTicksLimit: 6 } },
+            y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: 'rgba(255,255,255,0.3)' } }
+          }
         }
       });
     }
 
-    function renderHourlyChart(hourlyData) {
-      const ctx = document.getElementById('hourlyChart').getContext('2d');
-
+    function renderHourlyChart(hourly) {
+      const ctx = document.getElementById('hourlyChart')?.getContext('2d');
+      if (!ctx) return;
       if (hourlyChart) hourlyChart.destroy();
-
-      const labels = hourlyData.map(d => `${d.hour}:00`);
-      const values = hourlyData.map(d => d.count);
 
       hourlyChart = new Chart(ctx, {
         type: 'bar',
         data: {
-          labels,
+          labels: hourly.map(d => `${d.hour}:00`),
           datasets: [{
-            label: '浏览量',
-            data: values,
+            data: hourly.map(d => d.count),
             backgroundColor: (context) => {
               const chart = context.chart;
               const { ctx, chartArea } = chart;
-              if (!chartArea) return '#8b5cf6';
-              const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
-              gradient.addColorStop(0, '#06b6d4');
-              gradient.addColorStop(1, '#8b5cf6');
-              return gradient;
+              if (!chartArea) return '#4ecdc4';
+              const grad = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+              grad.addColorStop(0, '#4ecdc4');
+              grad.addColorStop(1, '#ff6b6b');
+              return grad;
             },
-            borderRadius: 6,
+            borderRadius: 8,
             borderSkipped: false
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              backgroundColor: 'rgba(15, 15, 35, 0.9)',
-              titleColor: '#f8fafc',
-              bodyColor: '#94a3b8',
-              borderColor: 'rgba(255, 255, 255, 0.1)',
-              borderWidth: 1,
-              cornerRadius: 8,
-              padding: 12
-            }
-          },
+          plugins: { legend: { display: false } },
           scales: {
-            x: {
-              grid: { display: false },
-              ticks: { color: '#64748b', font: { size: 11 } }
-            },
-            y: {
-              beginAtZero: true,
-              grid: { color: 'rgba(255, 255, 255, 0.03)' },
-              ticks: { color: '#64748b', font: { size: 11 } }
-            }
+            x: { grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.3)' } },
+            y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: 'rgba(255,255,255,0.3)' } }
           }
         }
       });
     }
 
-    function formatNumber(num) {
-      if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
-      if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
-      return num.toLocaleString('zh-CN');
+    function renderSankey(flow) {
+      const container = document.getElementById('sankeyChart');
+      if (!container || !flow.nodes.length) {
+        if (container) container.innerHTML = '<div class="empty-state"><div class="empty-icon">🌊</div><p>暂无流向数据</p></div>';
+        return;
+      }
+
+      if (sankeyChart) sankeyChart.dispose();
+      sankeyChart = echarts.init(container);
+
+      const colors = ['#ff6b6b', '#4ecdc4', '#ffe66d', '#95e1d3', '#dfe6e9', '#a29bfe', '#fd79a8', '#00b894'];
+
+      sankeyChart.setOption({
+        tooltip: {
+          trigger: 'item',
+          backgroundColor: 'rgba(10, 10, 15, 0.95)',
+          borderColor: 'rgba(255,255,255,0.1)',
+          textStyle: { color: '#fff' },
+          formatter: p => p.dataType === 'edge'
+            ? `<b>${p.data.source}</b> → <b>${p.data.target}</b><br/>访问: ${p.data.value}`
+            : `<b>${p.name}</b>`
+        },
+        series: [{
+          type: 'sankey',
+          layout: 'none',
+          emphasis: { focus: 'adjacency' },
+          nodeAlign: 'left',
+          lineStyle: { color: 'gradient', curveness: 0.5, opacity: 0.35 },
+          itemStyle: { borderWidth: 0 },
+          label: { color: '#fff', fontSize: 11 },
+          data: flow.nodes.map((n, i) => ({ ...n, itemStyle: { color: colors[i % colors.length] } })),
+          links: flow.links
+        }]
+      });
+
+      window.addEventListener('resize', () => sankeyChart?.resize());
     }
 
-    function getPageIcon(url) {
+    function formatNum(n) {
+      if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
+      if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
+      return n.toLocaleString();
+    }
+
+    function getIcon(url) {
       if (url === '/') return '🏠';
       if (url.includes('product')) return '🛒';
-      if (url.includes('blog') || url.includes('post')) return '📝';
+      if (url.includes('blog')) return '📝';
       if (url.includes('doc')) return '📚';
       if (url.includes('about')) return 'ℹ️';
-      if (url.includes('contact')) return '📧';
-      if (url.includes('login') || url.includes('signup')) return '🔐';
       if (url.includes('pricing')) return '💰';
-      if (url.includes('dashboard')) return '📊';
-      if (url.includes('profile') || url.includes('setting')) return '⚙️';
       return '📄';
     }
 
-    function getReferrerIcon(ref) {
-      if (!ref || ref === 'direct') return '🎯';
+    function getRefIcon(ref) {
+      if (!ref) return '🎯';
       if (ref.includes('google')) return '🔍';
-      if (ref.includes('twitter') || ref.includes('x.com')) return '🐦';
-      if (ref.includes('facebook')) return '📘';
-      if (ref.includes('linkedin')) return '💼';
+      if (ref.includes('twitter')) return '🐦';
       if (ref.includes('github')) return '🐙';
-      if (ref.includes('reddit')) return '🤖';
-      if (ref.includes('bing')) return '🔎';
-      if (ref.startsWith('/')) return '🔄';
       return '🌐';
     }
 
-    function formatReferrer(ref) {
+    function formatRef(ref) {
       if (!ref || ref === 'direct') return '直接访问';
-      if (ref.includes('google')) return 'Google 搜索';
-      if (ref.includes('bing')) return 'Bing 搜索';
-      if (ref.includes('twitter') || ref.includes('x.com')) return 'Twitter';
-      if (ref.includes('facebook')) return 'Facebook';
-      if (ref.includes('linkedin')) return 'LinkedIn';
+      if (ref.includes('google')) return 'Google';
       if (ref.includes('github')) return 'GitHub';
-      if (ref.includes('reddit')) return 'Reddit';
-      if (ref.includes('producthunt')) return 'Product Hunt';
-      return ref;
+      return ref.replace(/https?:\/\//, '').split('/')[0];
     }
 
-    // Initial load
     loadStats();
-
-    // Auto-refresh every 30 seconds
     setInterval(loadStats, 30000);
   </script>
 </body>
