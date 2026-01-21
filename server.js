@@ -223,6 +223,103 @@ app.get('/api/stats', (req, res) => {
 });
 
 // ============================================
+// Visitors API - GET /api/visitors (recent visitors with IP)
+// ============================================
+app.get('/api/visitors', (req, res) => {
+    try {
+        const limit = Math.min(parseInt(req.query.limit) || 50, 100);
+
+        const visitorsResult = db.exec(`
+          SELECT 
+            timestamp,
+            ip,
+            uid,
+            url,
+            referrer,
+            user_agent
+          FROM visits
+          ORDER BY timestamp DESC
+          LIMIT ${limit}
+        `);
+
+        const visitors = visitorsResult.length > 0
+            ? visitorsResult[0].values.map(row => ({
+                timestamp: row[0],
+                ip: row[1],
+                uid: row[2],
+                url: row[3],
+                referrer: row[4],
+                userAgent: row[5],
+                // Parse device from user agent
+                device: parseDevice(row[5])
+            }))
+            : [];
+
+        // Get unique IPs for geo lookup
+        const uniqueIPs = [...new Set(visitors.map(v => v.ip).filter(Boolean))];
+
+        res.json({ visitors, uniqueIPs });
+
+    } catch (error) {
+        console.error('❌ Error fetching visitors:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Parse device from user agent
+function parseDevice(ua) {
+    if (!ua) return { type: 'unknown', browser: 'unknown', os: 'unknown' };
+
+    let type = 'desktop';
+    if (/mobile|android|iphone|ipad/i.test(ua)) type = 'mobile';
+    if (/tablet|ipad/i.test(ua)) type = 'tablet';
+
+    let browser = 'other';
+    if (/chrome/i.test(ua) && !/edge/i.test(ua)) browser = 'Chrome';
+    else if (/safari/i.test(ua) && !/chrome/i.test(ua)) browser = 'Safari';
+    else if (/firefox/i.test(ua)) browser = 'Firefox';
+    else if (/edge/i.test(ua)) browser = 'Edge';
+
+    let os = 'other';
+    if (/windows/i.test(ua)) os = 'Windows';
+    else if (/mac os/i.test(ua)) os = 'macOS';
+    else if (/linux/i.test(ua)) os = 'Linux';
+    else if (/android/i.test(ua)) os = 'Android';
+    else if (/iphone|ipad|ios/i.test(ua)) os = 'iOS';
+
+    return { type, browser, os };
+}
+
+// ============================================
+// Clear Data API - DELETE /api/clear
+// ============================================
+app.delete('/api/clear', (req, res) => {
+    try {
+        const { confirm } = req.query;
+
+        if (confirm !== 'yes-delete-all-data') {
+            return res.status(400).json({
+                error: 'Missing confirmation',
+                message: 'Add ?confirm=yes-delete-all-data to confirm deletion'
+            });
+        }
+
+        db.run('DELETE FROM visits');
+        saveDatabase();
+
+        res.json({
+            success: true,
+            message: 'All data has been cleared',
+            timestamp: new Date().toISOString()
+        });
+
+    } catch (error) {
+        console.error('❌ Error clearing data:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// ============================================
 // Flow API - GET /api/flow (for Sankey diagram)
 // Multi-level flow tracking
 // ============================================
