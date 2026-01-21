@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 
 const app = express();
-const PORT = 5055;
+const PORT = 8811;
 const DB_PATH = path.join(__dirname, 'analytics.db');
 
 // ============================================
