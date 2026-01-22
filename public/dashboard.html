@@ -19,10 +19,12 @@
       --accent-2: #4ecdc4;
       --accent-3: #ffe66d;
       --accent-4: #95e1d3;
+      --accent-5: #a29bfe;
       --text-1: #ffffff;
       --text-2: rgba(255, 255, 255, 0.6);
       --text-3: rgba(255, 255, 255, 0.3);
       --danger: #e74c3c;
+      --success: #2ecc71;
     }
 
     * {
@@ -42,106 +44,135 @@
       position: fixed;
       inset: 0;
       z-index: 0;
-      background: radial-gradient(ellipse 80% 50% at 20% 40%, rgba(255, 107, 107, 0.15) 0%, transparent 50%), radial-gradient(ellipse 60% 40% at 80% 20%, rgba(78, 205, 196, 0.12) 0%, transparent 50%);
-      animation: meshFloat 30s ease-in-out infinite;
-    }
-
-    @keyframes meshFloat {
-
-      0%,
-      100% {
-        filter: blur(60px);
-      }
-
-      50% {
-        filter: blur(80px) brightness(1.2);
-      }
+      background: radial-gradient(ellipse 80% 50% at 20% 40%, rgba(255, 107, 107, 0.12) 0%, transparent 50%), radial-gradient(ellipse 60% 40% at 80% 20%, rgba(78, 205, 196, 0.1) 0%, transparent 50%);
     }
 
     .container {
       position: relative;
       z-index: 2;
-      max-width: 1500px;
+      max-width: 1600px;
       margin: 0 auto;
-      padding: 2rem;
+      padding: 1.5rem;
     }
 
     header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 2rem;
-      padding-bottom: 1.5rem;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
       border-bottom: 1px solid var(--border);
       flex-wrap: wrap;
       gap: 1rem;
     }
 
     .brand h1 {
-      font-size: 2rem;
+      font-size: 1.8rem;
       background: linear-gradient(135deg, var(--text-1), var(--text-2));
       -webkit-background-clip: text;
+      background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
     .brand p {
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       color: var(--text-3);
       text-transform: uppercase;
-      letter-spacing: 0.2em;
+      letter-spacing: 0.15em;
     }
 
     .header-actions {
       display: flex;
-      gap: 1rem;
+      gap: 0.75rem;
       align-items: center;
+      flex-wrap: wrap;
     }
 
-    .live-indicator {
+    .date-selector {
+      display: flex;
+      gap: 0.25rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.25rem;
+    }
+
+    .date-btn {
+      padding: 0.4rem 0.8rem;
+      border: none;
+      background: transparent;
+      color: var(--text-2);
+      cursor: pointer;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      transition: all 0.2s;
+    }
+
+    .date-btn.active {
+      background: var(--accent-2);
+      color: #000;
+      font-weight: 600;
+    }
+
+    .date-btn:hover:not(.active) {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .realtime-badge {
       display: flex;
       align-items: center;
       gap: 0.5rem;
       padding: 0.5rem 1rem;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 100px;
-      font-size: 0.8rem;
+      background: linear-gradient(135deg, rgba(46, 204, 113, 0.15), rgba(39, 174, 96, 0.1));
+      border: 1px solid rgba(46, 204, 113, 0.3);
+      border-radius: 10px;
     }
 
-    .pulse {
+    .realtime-dot {
       width: 8px;
       height: 8px;
-      background: var(--accent-2);
+      background: var(--success);
       border-radius: 50%;
-      animation: pulse 2s infinite;
+      animation: pulse 1.5s infinite;
     }
 
     @keyframes pulse {
 
       0%,
       100% {
-        box-shadow: 0 0 0 0 rgba(78, 205, 196, 0.5);
+        box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.5);
       }
 
       50% {
-        box-shadow: 0 0 0 10px transparent;
+        box-shadow: 0 0 0 8px transparent;
       }
     }
 
+    .realtime-count {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--success);
+    }
+
+    .realtime-label {
+      font-size: 0.65rem;
+      color: var(--text-3);
+    }
+
     .btn {
-      padding: 0.6rem 1.2rem;
+      padding: 0.5rem 1rem;
       border: none;
-      border-radius: 10px;
+      border-radius: 8px;
       cursor: pointer;
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       font-weight: 600;
-      transition: all 0.3s;
+      transition: all 0.2s;
     }
 
     .btn-danger {
-      background: rgba(231, 76, 60, 0.2);
+      background: rgba(231, 76, 60, 0.15);
       color: var(--danger);
-      border: 1px solid var(--danger);
+      border: 1px solid rgba(231, 76, 60, 0.3);
     }
 
     .btn-danger:hover {
@@ -152,34 +183,33 @@
     .card {
       background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 1.5rem;
-      backdrop-filter: blur(40px);
+      border-radius: 16px;
+      padding: 1.25rem;
+      backdrop-filter: blur(20px);
     }
 
-    .bento {
+    .stats-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(6, 1fr);
       gap: 1rem;
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
     }
 
     .stat-card {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-
-    .stat-card .label {
-      font-size: 0.7rem;
-      color: var(--text-3);
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
+      text-align: center;
     }
 
     .stat-card .value {
-      font-size: 2.5rem;
+      font-size: 2rem;
       font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+
+    .stat-card .label {
+      font-size: 0.65rem;
+      color: var(--text-3);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
     }
 
     .stat-card:nth-child(1) .value {
@@ -198,22 +228,37 @@
       color: var(--accent-4);
     }
 
+    .stat-card:nth-child(5) .value {
+      color: var(--accent-5);
+    }
+
+    .stat-card:nth-child(6) .value {
+      color: var(--accent-1);
+    }
+
     .grid-2 {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 1rem;
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
     }
 
     .grid-3 {
       display: grid;
-      grid-template-columns: 2fr 1fr;
+      grid-template-columns: 1fr 1fr 1fr;
       gap: 1rem;
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
     }
 
     .chart-container {
-      height: 220px;
+      height: 200px;
     }
 
     .chart-header {
@@ -224,42 +269,46 @@
     }
 
     .chart-header h3 {
-      font-size: 1rem;
+      font-size: 0.9rem;
       font-weight: 500;
       color: var(--text-2);
     }
 
     .badge {
-      font-size: 0.65rem;
-      padding: 0.25rem 0.6rem;
+      font-size: 0.6rem;
+      padding: 0.2rem 0.5rem;
       background: rgba(255, 107, 107, 0.15);
       color: var(--accent-1);
       border-radius: 100px;
     }
 
     #sankeyChart {
-      height: 350px;
+      height: 300px;
+    }
+
+    .pie-container {
+      height: 180px;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
     }
 
     th {
       text-align: left;
-      padding: 0.75rem 0;
-      font-size: 0.65rem;
+      padding: 0.6rem 0;
+      font-size: 0.6rem;
       color: var(--text-3);
       text-transform: uppercase;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.05em;
       border-bottom: 1px solid var(--border);
     }
 
     td {
-      padding: 0.75rem 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+      padding: 0.6rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.02);
     }
 
     tr:hover {
@@ -267,56 +316,106 @@
     }
 
     .visitors-table {
-      max-height: 400px;
+      max-height: 300px;
       overflow-y: auto;
     }
 
     .ip-badge {
       display: inline-block;
-      padding: 0.2rem 0.5rem;
+      padding: 0.15rem 0.4rem;
       background: rgba(78, 205, 196, 0.15);
       color: var(--accent-2);
-      border-radius: 6px;
+      border-radius: 4px;
       font-family: monospace;
-      font-size: 0.75rem;
+      font-size: 0.7rem;
     }
 
     .device-badge {
       display: inline-flex;
       align-items: center;
-      gap: 0.3rem;
-      padding: 0.2rem 0.5rem;
+      gap: 0.2rem;
+      padding: 0.15rem 0.4rem;
       background: rgba(255, 230, 109, 0.15);
       color: var(--accent-3);
-      border-radius: 6px;
-      font-size: 0.7rem;
+      border-radius: 4px;
+      font-size: 0.65rem;
     }
 
     .url-badge {
       display: inline-block;
-      max-width: 150px;
+      max-width: 120px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      padding: 0.2rem 0.5rem;
+      padding: 0.15rem 0.4rem;
       background: rgba(255, 107, 107, 0.1);
-      border-radius: 6px;
-      font-size: 0.75rem;
+      border-radius: 4px;
+      font-size: 0.7rem;
     }
 
     .time-badge {
-      font-size: 0.7rem;
+      font-size: 0.65rem;
       color: var(--text-3);
     }
 
-    .rank {
-      width: 22px;
-      height: 22px;
+    .channel-bar {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .channel-label {
+      width: 60px;
+      font-size: 0.7rem;
+      color: var(--text-2);
+    }
+
+    .channel-track {
+      flex: 1;
+      height: 24px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .channel-fill {
+      height: 100%;
       border-radius: 6px;
       display: flex;
       align-items: center;
+      justify-content: flex-end;
+      padding-right: 0.5rem;
+      font-size: 0.65rem;
+      font-weight: 600;
+      transition: width 0.5s;
+    }
+
+    .channel-fill.direct {
+      background: linear-gradient(90deg, var(--accent-1), #ff8787);
+    }
+
+    .channel-fill.search {
+      background: linear-gradient(90deg, var(--accent-2), #7ee8db);
+    }
+
+    .channel-fill.social {
+      background: linear-gradient(90deg, var(--accent-5), #c4b5fd);
+    }
+
+    .channel-fill.referral {
+      background: linear-gradient(90deg, var(--accent-3), #fff59d);
+      color: #333;
+    }
+
+    .rank {
+      width: 20px;
+      height: 20px;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
       justify-content: center;
-      font-size: 0.7rem;
+      font-size: 0.65rem;
       font-weight: 700;
     }
 
@@ -342,12 +441,35 @@
     }
 
     .count-pill {
-      padding: 0.3rem 0.6rem;
+      padding: 0.2rem 0.5rem;
       background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), rgba(78, 205, 196, 0.1));
       border: 1px solid var(--border);
-      border-radius: 6px;
+      border-radius: 5px;
       font-weight: 600;
-      font-size: 0.8rem;
+      font-size: 0.75rem;
+    }
+
+    .layer-controls {
+      display: flex;
+      gap: 0.3rem;
+    }
+
+    .layer-btn {
+      padding: 0.25rem 0.5rem;
+      font-size: 0.65rem;
+      min-width: 24px;
+      background: var(--bg-card);
+      color: var(--text-2);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .layer-btn.active {
+      background: var(--accent-2);
+      color: #000;
+      border-color: var(--accent-2);
     }
 
     .loading {
@@ -355,13 +477,13 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-height: 50vh;
+      min-height: 40vh;
       gap: 1rem;
     }
 
     .loader {
-      width: 40px;
-      height: 40px;
+      width: 36px;
+      height: 36px;
       border: 2px solid var(--border);
       border-top-color: var(--accent-1);
       border-radius: 50%;
@@ -376,8 +498,9 @@
 
     .empty-state {
       text-align: center;
-      padding: 2rem;
+      padding: 1.5rem;
       color: var(--text-3);
+      font-size: 0.85rem;
     }
 
     .modal-overlay {
@@ -393,26 +516,27 @@
     .modal {
       background: var(--bg-dark);
       border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 2rem;
-      max-width: 400px;
+      border-radius: 16px;
+      padding: 1.5rem;
+      max-width: 360px;
       text-align: center;
     }
 
     .modal h3 {
-      margin-bottom: 1rem;
+      margin-bottom: 0.75rem;
       color: var(--danger);
+      font-size: 1rem;
     }
 
     .modal p {
       color: var(--text-2);
-      margin-bottom: 1.5rem;
-      font-size: 0.9rem;
+      margin-bottom: 1.25rem;
+      font-size: 0.85rem;
     }
 
     .modal-buttons {
       display: flex;
-      gap: 1rem;
+      gap: 0.75rem;
       justify-content: center;
     }
 
@@ -425,22 +549,26 @@
     .btn-confirm-delete {
       background: var(--danger);
       color: white;
+      border: none;
     }
 
     @media (max-width: 1200px) {
-
-      .bento,
-      .grid-2 {
-        grid-template-columns: repeat(2, 1fr);
+      .stats-grid {
+        grid-template-columns: repeat(3, 1fr);
       }
 
-      .grid-3 {
-        grid-template-columns: 1fr;
+      .grid-3,
+      .grid-4 {
+        grid-template-columns: 1fr 1fr;
       }
     }
 
     @media (max-width: 768px) {
-      .bento {
+
+      .stats-grid,
+      .grid-2,
+      .grid-3,
+      .grid-4 {
         grid-template-columns: 1fr;
       }
 
@@ -461,129 +589,167 @@
         <p>Real-time Insights</p>
       </div>
       <div class="header-actions">
-        <div class="live-indicator"><span class="pulse"></span><span id="lastUpdated">加载中...</span></div>
-        <button class="btn btn-danger" onclick="showClearModal()">🗑️ 清空数据</button>
+        <div class="date-selector">
+          <button class="date-btn active" onclick="setDateRange('today')">今日</button>
+          <button class="date-btn" onclick="setDateRange('week')">本周</button>
+          <button class="date-btn" onclick="setDateRange('month')">本月</button>
+          <button class="date-btn" onclick="setDateRange('all')">全部</button>
+        </div>
+        <div class="realtime-badge">
+          <span class="realtime-dot"></span>
+          <div><span class="realtime-count" id="realtimeCount">0</span>
+            <div class="realtime-label">实时在线</div>
+          </div>
+        </div>
+        <button class="btn btn-danger" onclick="showClearModal()">🗑️ 清空</button>
       </div>
     </header>
     <div id="content">
       <div class="loading">
         <div class="loader"></div>
-        <p style="color:var(--text-3)">加载数据中...</p>
+        <p style="color:var(--text-3)">加载中...</p>
       </div>
     </div>
     <div id="modal-container"></div>
   </div>
 
   <script>
-    let trendChart = null, hourlyChart = null, sankeyChart = null;
+    let trendChart = null, hourlyChart = null, sankeyChart = null, deviceChart = null, browserChart = null;
+    let currentRange = 'today';
     let currentLayers = 5;
-    let cachedStats = null, cachedVisitors = null;
 
     async function loadStats() {
       try {
         const [statsRes, flowRes, visitorsRes] = await Promise.all([
-          fetch('/api/stats'),
+          fetch(`/api/stats?range=${currentRange}`),
           fetch(`/api/flow?maxLayers=${currentLayers}`),
-          fetch('/api/visitors?limit=30')
+          fetch('/api/visitors?limit=20')
         ]);
         if (!statsRes.ok) throw new Error('加载失败');
-        cachedStats = await statsRes.json();
-        const flow = flowRes.ok ? await flowRes.json() : { nodes: [], links: [], maxLayers: 5 };
-        cachedVisitors = visitorsRes.ok ? await visitorsRes.json() : { visitors: [] };
-        renderDashboard(cachedStats, flow, cachedVisitors);
-        document.getElementById('lastUpdated').textContent = `更新于 ${new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}`;
+        const stats = await statsRes.json();
+        const flow = flowRes.ok ? await flowRes.json() : { nodes: [], links: [] };
+        const visitors = visitorsRes.ok ? await visitorsRes.json() : { visitors: [] };
+        document.getElementById('realtimeCount').textContent = stats.realtimeUsers || 0;
+        renderDashboard(stats, flow, visitors);
       } catch (error) {
-        document.getElementById('content').innerHTML = `<div class="empty-state"><p>⚠️ ${error.message}</p></div>`;
+        document.getElementById('content').innerHTML = `<div class="empty-state">⚠️ ${error.message}</div>`;
       }
+    }
+
+    function setDateRange(range) {
+      currentRange = range;
+      document.querySelectorAll('.date-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      loadStats();
     }
 
     async function reloadSankey(layers) {
       currentLayers = layers;
-      try {
-        const flowRes = await fetch(`/api/flow?maxLayers=${layers}`);
-        const flow = flowRes.ok ? await flowRes.json() : { nodes: [], links: [] };
-        renderSankey(flow);
-        updateLayerButtons();
-      } catch (e) { console.error(e); }
-    }
-
-    function updateLayerButtons() {
-      document.querySelectorAll('.layer-btn').forEach(btn => {
-        btn.classList.toggle('active', parseInt(btn.dataset.layers) === currentLayers);
-      });
+      const flowRes = await fetch(`/api/flow?maxLayers=${layers}`);
+      const flow = flowRes.ok ? await flowRes.json() : { nodes: [], links: [] };
+      renderSankey(flow);
+      document.querySelectorAll('.layer-btn').forEach(btn => btn.classList.toggle('active', parseInt(btn.dataset.layers) === layers));
     }
 
     function renderDashboard(data, flow, visitorsData) {
       const avgDepth = data.uv > 0 ? (data.pv / data.uv).toFixed(1) : '0';
-      const bounceRate = data.uv > 0 ? Math.max(15, 100 - (data.pv / data.uv * 12)).toFixed(1) : '0';
+      const bounceRate = data.uv > 0 ? Math.max(15, 100 - (data.pv / data.uv * 10)).toFixed(0) : '0';
+      const totalChannels = Object.values(data.channels || {}).reduce((a, b) => a + b, 0) || 1;
 
       document.getElementById('content').innerHTML = `
-        <div class="bento">
-          <div class="card stat-card"><div class="label">页面浏览量</div><div class="value">${formatNum(data.pv)}</div></div>
-          <div class="card stat-card"><div class="label">独立访客</div><div class="value">${formatNum(data.uv)}</div></div>
-          <div class="card stat-card"><div class="label">访问深度</div><div class="value">${avgDepth}</div></div>
-          <div class="card stat-card"><div class="label">跳出率</div><div class="value">${bounceRate}%</div></div>
+        <div class="stats-grid">
+          <div class="card stat-card"><div class="value">${formatNum(data.pv)}</div><div class="label">浏览量 PV</div></div>
+          <div class="card stat-card"><div class="value">${formatNum(data.uv)}</div><div class="label">访客数 UV</div></div>
+          <div class="card stat-card"><div class="value">${data.newVisitors || 0}</div><div class="label">新访客</div></div>
+          <div class="card stat-card"><div class="value">${data.returningVisitors || 0}</div><div class="label">回访用户</div></div>
+          <div class="card stat-card"><div class="value">${avgDepth}</div><div class="label">访问深度</div></div>
+          <div class="card stat-card"><div class="value">${bounceRate}%</div><div class="label">跳出率</div></div>
+        </div>
+
+        <div class="grid-4">
+          <div class="card">
+            <div class="chart-header"><h3>📈 ${currentRange === 'today' ? '今日分时' : '每日趋势'}</h3><span class="badge">${data.dateRange?.range || 'today'}</span></div>
+            <div class="chart-container"><canvas id="hourlyChart"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="chart-header"><h3>📱 设备分布</h3></div>
+            <div class="pie-container"><canvas id="deviceChart"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="chart-header"><h3>🌐 浏览器</h3></div>
+            <div class="pie-container"><canvas id="browserChart"></canvas></div>
+          </div>
         </div>
 
         <div class="grid-2">
-          <div class="card"><div class="chart-header"><h3>📈 实时流量</h3><span class="badge">最近1小时</span></div><div class="chart-container"><canvas id="trendChart"></canvas></div></div>
-          <div class="card"><div class="chart-header"><h3>🕐 今日分时</h3></div><div class="chart-container"><canvas id="hourlyChart"></canvas></div></div>
+          <div class="card">
+            <div class="chart-header"><h3>📊 流量渠道</h3></div>
+            <div class="channel-bar"><span class="channel-label">直接访问</span><div class="channel-track"><div class="channel-fill direct" style="width:${(data.channels?.direct || 0) / totalChannels * 100}%">${data.channels?.direct || 0}</div></div></div>
+            <div class="channel-bar"><span class="channel-label">搜索引擎</span><div class="channel-track"><div class="channel-fill search" style="width:${(data.channels?.search || 0) / totalChannels * 100}%">${data.channels?.search || 0}</div></div></div>
+            <div class="channel-bar"><span class="channel-label">社交媒体</span><div class="channel-track"><div class="channel-fill social" style="width:${(data.channels?.social || 0) / totalChannels * 100}%">${data.channels?.social || 0}</div></div></div>
+            <div class="channel-bar"><span class="channel-label">外部链接</span><div class="channel-track"><div class="channel-fill referral" style="width:${(data.channels?.referral || 0) / totalChannels * 100}%">${data.channels?.referral || 0}</div></div></div>
+          </div>
+          <div class="card">
+            <div class="chart-header"><h3>⏱️ 实时流量</h3><span class="badge">最近1小时</span></div>
+            <div class="chart-container"><canvas id="trendChart"></canvas></div>
+          </div>
         </div>
 
-        <div class="card" style="margin-bottom:2rem">
+        <div class="card" style="margin-bottom:1.5rem">
           <div class="chart-header">
             <h3>🌊 用户行为流向</h3>
-            <div style="display:flex;gap:0.5rem;align-items:center">
-              <span style="font-size:0.7rem;color:var(--text-3)">层数:</span>
-              ${[1, 2, 3, 4, 5, 6, 7, 8].map(n => `<button class="btn layer-btn ${n === currentLayers ? 'active' : ''}" data-layers="${n}" onclick="reloadSankey(${n})" style="padding:0.3rem 0.6rem;font-size:0.7rem;min-width:28px;background:${n === currentLayers ? 'var(--accent-2)' : 'var(--bg-card)'};color:${n === currentLayers ? '#000' : 'var(--text-2)'};border:1px solid var(--border);border-radius:6px">${n}</button>`).join('')}
+            <div class="layer-controls">
+              <span style="font-size:0.65rem;color:var(--text-3);margin-right:0.5rem">层数:</span>
+              ${[1, 2, 3, 4, 5, 6, 7, 8].map(n => `<button class="layer-btn ${n === currentLayers ? 'active' : ''}" data-layers="${n}" onclick="reloadSankey(${n})">${n}</button>`).join('')}
             </div>
           </div>
           <div id="sankeyChart"></div>
         </div>
 
-        <div class="card" style="margin-bottom:2rem">
-          <div class="chart-header"><h3>👥 最近访客</h3><span class="badge">${visitorsData.visitors.length} 条记录</span></div>
-          <div class="visitors-table">
-            <table>
-              <thead><tr><th>时间</th><th>IP</th><th>页面</th><th>设备</th><th>来源</th></tr></thead>
-              <tbody>
-                ${visitorsData.visitors.length ? visitorsData.visitors.map(v => `
-                  <tr>
-                    <td><span class="time-badge">${formatTime(v.timestamp)}</span></td>
-                    <td><span class="ip-badge">${v.ip || '-'}</span></td>
-                    <td><span class="url-badge" title="${v.url}">${v.url || '/'}</span></td>
-                    <td><span class="device-badge">${getDeviceIcon(v.device?.type)} ${v.device?.browser || '-'}</span></td>
-                    <td><span class="url-badge" title="${v.referrer}">${v.referrer ? formatRef(v.referrer) : '直接'}</span></td>
-                  </tr>
-                `).join('') : '<tr><td colspan="5"><div class="empty-state">暂无访客数据</div></td></tr>'}
-              </tbody>
-            </table>
+        <div class="grid-2">
+          <div class="card">
+            <div class="chart-header"><h3>👥 最近访客</h3><span class="badge">${visitorsData.visitors.length}条</span></div>
+            <div class="visitors-table"><table>
+              <thead><tr><th>时间</th><th>IP</th><th>页面</th><th>设备</th></tr></thead>
+              <tbody>${visitorsData.visitors.length ? visitorsData.visitors.slice(0, 10).map(v => `
+                <tr><td><span class="time-badge">${formatTime(v.timestamp)}</span></td><td><span class="ip-badge">${v.ip || '-'}</span></td><td><span class="url-badge" title="${v.url}">${v.url || '/'}</span></td><td><span class="device-badge">${getDeviceIcon(v.device?.type)} ${v.device?.browser || '-'}</span></td></tr>
+              `).join('') : '<tr><td colspan="4"><div class="empty-state">暂无数据</div></td></tr>'}</tbody>
+            </table></div>
+          </div>
+          <div class="card">
+            <div class="chart-header"><h3>🚪 入口/出口页面</h3></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+              <div><div style="font-size:0.7rem;color:var(--accent-2);margin-bottom:0.5rem">🔹 入口页</div>
+                ${(data.entryPages || []).map((p, i) => `<div style="display:flex;justify-content:space-between;padding:0.3rem 0;font-size:0.75rem;border-bottom:1px solid var(--border)"><span class="url-badge">${p.url}</span><span>${p.count}</span></div>`).join('') || '<div class="empty-state">暂无</div>'}
+              </div>
+              <div><div style="font-size:0.7rem;color:var(--accent-1);margin-bottom:0.5rem">🔸 出口页</div>
+                ${(data.exitPages || []).map((p, i) => `<div style="display:flex;justify-content:space-between;padding:0.3rem 0;font-size:0.75rem;border-bottom:1px solid var(--border)"><span class="url-badge">${p.url}</span><span>${p.count}</span></div>`).join('') || '<div class="empty-state">暂无</div>'}
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="grid-2">
+        <div class="grid-2" style="margin-top:1.5rem">
           <div class="card">
             <div class="chart-header"><h3>🔥 热门页面</h3></div>
-            <table>
-              <thead><tr><th>#</th><th>页面</th><th style="text-align:right">浏览量</th></tr></thead>
-              <tbody>${data.topPages.length ? data.topPages.slice(0, 8).map((p, i) => `
-                <tr><td><span class="rank ${i < 3 ? 'rank-' + (i + 1) : 'rank-n'}">${i + 1}</span></td><td><span class="url-badge" title="${p.url}">${p.url}</span></td><td style="text-align:right"><span class="count-pill">${p.count}</span></td></tr>
-              `).join('') : '<tr><td colspan="3"><div class="empty-state">暂无数据</div></td></tr>'}</tbody>
-            </table>
+            <table><thead><tr><th>#</th><th>页面</th><th style="text-align:right">浏览量</th></tr></thead>
+            <tbody>${data.topPages.length ? data.topPages.slice(0, 6).map((p, i) => `
+              <tr><td><span class="rank ${i < 3 ? 'rank-' + (i + 1) : 'rank-n'}">${i + 1}</span></td><td><span class="url-badge" title="${p.url}">${p.url}</span></td><td style="text-align:right"><span class="count-pill">${p.count}</span></td></tr>
+            `).join('') : '<tr><td colspan="3"><div class="empty-state">暂无</div></td></tr>'}</tbody></table>
           </div>
           <div class="card">
             <div class="chart-header"><h3>🔗 流量来源</h3></div>
-            <table>
-              <thead><tr><th>#</th><th>来源</th><th style="text-align:right">访问量</th></tr></thead>
-              <tbody>${data.topReferrers.length ? data.topReferrers.slice(0, 8).map((r, i) => `
-                <tr><td><span class="rank ${i < 3 ? 'rank-' + (i + 1) : 'rank-n'}">${i + 1}</span></td><td><span class="url-badge">${formatRef(r.referrer)}</span></td><td style="text-align:right"><span class="count-pill">${r.count}</span></td></tr>
-              `).join('') : '<tr><td colspan="3"><div class="empty-state">暂无数据</div></td></tr>'}</tbody>
-            </table>
+            <table><thead><tr><th>#</th><th>来源</th><th style="text-align:right">次数</th></tr></thead>
+            <tbody>${data.topReferrers.length ? data.topReferrers.slice(0, 6).map((r, i) => `
+              <tr><td><span class="rank ${i < 3 ? 'rank-' + (i + 1) : 'rank-n'}">${i + 1}</span></td><td><span class="url-badge">${formatRef(r.referrer)}</span></td><td style="text-align:right"><span class="count-pill">${r.count}</span></td></tr>
+            `).join('') : '<tr><td colspan="3"><div class="empty-state">暂无</div></td></tr>'}</tbody></table>
           </div>
         </div>
       `;
       renderTrendChart(data.minuteTrend);
       renderHourlyChart(data.hourlyTrend);
+      renderDeviceChart(data.deviceStats);
+      renderBrowserChart(data.browserStats);
       renderSankey(flow);
     }
 
@@ -591,13 +757,13 @@
       const ctx = document.getElementById('trendChart')?.getContext('2d');
       if (!ctx) return;
       if (trendChart) trendChart.destroy();
-      const gradient = ctx.createLinearGradient(0, 0, 0, 220);
-      gradient.addColorStop(0, 'rgba(255,107,107,0.3)');
+      const gradient = ctx.createLinearGradient(0, 0, 0, 200);
+      gradient.addColorStop(0, 'rgba(255,107,107,0.25)');
       gradient.addColorStop(1, 'rgba(255,107,107,0)');
       trendChart = new Chart(ctx, {
         type: 'line',
         data: { labels: trend.map(d => d.minute?.split(' ')[1] || ''), datasets: [{ data: trend.map(d => d.count), borderColor: '#ff6b6b', backgroundColor: gradient, fill: true, tension: 0.4, pointRadius: 0, borderWidth: 2 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: 'rgba(255,255,255,0.3)', maxTicksLimit: 6, font: { size: 10 } } }, y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: 'rgba(255,255,255,0.3)', font: { size: 10 } } } } }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false, beginAtZero: true } } }
       });
     }
 
@@ -607,36 +773,61 @@
       if (hourlyChart) hourlyChart.destroy();
       hourlyChart = new Chart(ctx, {
         type: 'bar',
-        data: { labels: hourly.map(d => `${d.hour}:00`), datasets: [{ data: hourly.map(d => d.count), backgroundColor: ctx => { const { ctx: c, chartArea } = ctx.chart; if (!chartArea) return '#4ecdc4'; const g = c.createLinearGradient(0, chartArea.bottom, 0, chartArea.top); g.addColorStop(0, '#4ecdc4'); g.addColorStop(1, '#ff6b6b'); return g; }, borderRadius: 6, borderSkipped: false }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.3)', font: { size: 10 } } }, y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: 'rgba(255,255,255,0.3)', font: { size: 10 } } } } }
+        data: { labels: hourly.map(d => currentRange === 'today' ? `${d.hour}:00` : d.hour), datasets: [{ data: hourly.map(d => d.count), backgroundColor: ctx => { const { ctx: c, chartArea } = ctx.chart; if (!chartArea) return '#4ecdc4'; const g = c.createLinearGradient(0, chartArea.bottom, 0, chartArea.top); g.addColorStop(0, '#4ecdc4'); g.addColorStop(1, '#ff6b6b'); return g; }, borderRadius: 4, borderSkipped: false }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.3)', font: { size: 9 } } }, y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: 'rgba(255,255,255,0.3)', font: { size: 9 } } } } }
+      });
+    }
+
+    function renderDeviceChart(stats) {
+      const ctx = document.getElementById('deviceChart')?.getContext('2d');
+      if (!ctx || !stats) return;
+      if (deviceChart) deviceChart.destroy();
+      deviceChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: { labels: ['桌面端', '移动端', '平板'], datasets: [{ data: [stats.desktop || 0, stats.mobile || 0, stats.tablet || 0], backgroundColor: ['#ff6b6b', '#4ecdc4', '#ffe66d'], borderWidth: 0 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: 'rgba(255,255,255,0.6)', font: { size: 10 }, boxWidth: 12, padding: 8 } } }, cutout: '60%' }
+      });
+    }
+
+    function renderBrowserChart(stats) {
+      const ctx = document.getElementById('browserChart')?.getContext('2d');
+      if (!ctx || !stats) return;
+      if (browserChart) browserChart.destroy();
+      const labels = Object.keys(stats);
+      const values = Object.values(stats);
+      const colors = ['#ff6b6b', '#4ecdc4', '#ffe66d', '#95e1d3', '#a29bfe', '#fd79a8'];
+      browserChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: { labels, datasets: [{ data: values, backgroundColor: colors.slice(0, labels.length), borderWidth: 0 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: 'rgba(255,255,255,0.6)', font: { size: 10 }, boxWidth: 12, padding: 8 } } }, cutout: '60%' }
       });
     }
 
     function renderSankey(flow) {
       const container = document.getElementById('sankeyChart');
       if (!container) return;
-      if (!flow.nodes.length) { container.innerHTML = '<div class="empty-state">暂无流向数据</div>'; return; }
+      if (!flow.nodes?.length) { container.innerHTML = '<div class="empty-state">暂无流向数据</div>'; return; }
       if (sankeyChart) sankeyChart.dispose();
       sankeyChart = echarts.init(container);
       const colors = ['#ff6b6b', '#4ecdc4', '#ffe66d', '#95e1d3', '#a29bfe', '#fd79a8', '#00b894'];
       sankeyChart.setOption({
-        tooltip: { trigger: 'item', backgroundColor: 'rgba(10,10,15,0.95)', borderColor: 'rgba(255,255,255,0.1)', textStyle: { color: '#fff' }, formatter: p => p.dataType === 'edge' ? `<b>${p.data.source}</b> → <b>${p.data.target}</b><br/>访问: ${p.data.value}` : `<b>${p.name}</b>` },
-        series: [{ type: 'sankey', layout: 'none', emphasis: { focus: 'adjacency' }, nodeAlign: 'left', lineStyle: { color: 'gradient', curveness: 0.5, opacity: 0.35 }, itemStyle: { borderWidth: 0 }, label: { color: '#fff', fontSize: 10 }, data: flow.nodes.map((n, i) => ({ ...n, itemStyle: { color: colors[i % colors.length] } })), links: flow.links }]
+        tooltip: { trigger: 'item', backgroundColor: 'rgba(10,10,15,0.95)', borderColor: 'rgba(255,255,255,0.1)', textStyle: { color: '#fff', fontSize: 12 } },
+        series: [{ type: 'sankey', layout: 'none', emphasis: { focus: 'adjacency' }, nodeAlign: 'left', lineStyle: { color: 'gradient', curveness: 0.5, opacity: 0.3 }, itemStyle: { borderWidth: 0 }, label: { color: '#fff', fontSize: 9 }, data: flow.nodes.map((n, i) => ({ ...n, itemStyle: { color: colors[i % colors.length] } })), links: flow.links }]
       });
       window.addEventListener('resize', () => sankeyChart?.resize());
     }
 
-    function formatNum(n) { if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M'; if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K'; return n.toLocaleString(); }
+    function formatNum(n) { if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M'; if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K'; return n?.toLocaleString() || '0'; }
     function formatTime(ts) { if (!ts) return '-'; const d = new Date(ts); return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`; }
-    function formatRef(ref) { if (!ref || ref === 'direct') return '直接访问'; try { return new URL(ref).hostname; } catch { return ref.slice(0, 30); } }
-    function getDeviceIcon(type) { if (type === 'mobile') return '📱'; if (type === 'tablet') return '📱'; return '💻'; }
+    function formatRef(ref) { if (!ref || ref === 'direct') return '直接访问'; try { return new URL(ref).hostname; } catch { return ref.slice(0, 25); } }
+    function getDeviceIcon(type) { return type === 'mobile' ? '📱' : type === 'tablet' ? '📱' : '💻'; }
 
     function showClearModal() {
       document.getElementById('modal-container').innerHTML = `
         <div class="modal-overlay" onclick="closeModal()">
           <div class="modal" onclick="event.stopPropagation()">
             <h3>⚠️ 确认清空所有数据？</h3>
-            <p>此操作不可撤销！所有访客记录、页面浏览数据都将被永久删除。</p>
+            <p>此操作不可撤销！</p>
             <div class="modal-buttons">
               <button class="btn btn-cancel" onclick="closeModal()">取消</button>
               <button class="btn btn-confirm-delete" onclick="confirmClear()">确认删除</button>
@@ -645,15 +836,10 @@
         </div>
       `;
     }
-
     function closeModal() { document.getElementById('modal-container').innerHTML = ''; }
-
     async function confirmClear() {
-      try {
-        const res = await fetch('/api/clear?confirm=yes-delete-all-data', { method: 'DELETE' });
-        if (res.ok) { closeModal(); loadStats(); alert('✅ 数据已清空'); }
-        else { alert('❌ 清空失败'); }
-      } catch (e) { alert('❌ 请求失败: ' + e.message); }
+      const res = await fetch('/api/clear?confirm=yes-delete-all-data', { method: 'DELETE' });
+      if (res.ok) { closeModal(); loadStats(); } else { alert('清空失败'); }
     }
 
     loadStats();

@@ -135,85 +135,182 @@ app.get('/collect', (req, res) => {
 
 // ============================================
 // Stats API - GET /api/stats
+// Query params: ?range=today|week|month|all|custom&start=DATE&end=DATE
 // ============================================
 app.get('/api/stats', (req, res) => {
     try {
-        // Total Page Views
-        const pvResult = db.exec('SELECT COUNT(*) as pv FROM visits');
+        const range = req.query.range || 'today';
+        let startDate, endDate = new Date().toISOString();
+
+        const now = new Date();
+        switch (range) {
+            case 'today':
+                startDate = new Date(now.setHours(0, 0, 0, 0)).toISOString();
+                break;
+            case 'week':
+                startDate = new Date(now.setDate(now.getDate() - 7)).toISOString();
+                break;
+            case 'month':
+                startDate = new Date(now.setMonth(now.getMonth() - 1)).toISOString();
+                break;
+            case 'custom':
+                startDate = req.query.start || new Date(now.setDate(now.getDate() - 7)).toISOString();
+                endDate = req.query.end || new Date().toISOString();
+                break;
+            default:
+                startDate = '2000-01-01';
+        }
+
+        const dateFilter = `timestamp >= '${startDate}' AND timestamp <= '${endDate}'`;
+
+        // Total Page Views (filtered)
+        const pvResult = db.exec(`SELECT COUNT(*) FROM visits WHERE ${dateFilter}`);
         const pv = pvResult.length > 0 ? pvResult[0].values[0][0] : 0;
 
-        // Unique Visitors (by uid)
-        const uvResult = db.exec('SELECT COUNT(DISTINCT uid) as uv FROM visits WHERE uid IS NOT NULL');
+        // Unique Visitors (filtered)
+        const uvResult = db.exec(`SELECT COUNT(DISTINCT uid) FROM visits WHERE uid IS NOT NULL AND ${dateFilter}`);
         const uv = uvResult.length > 0 ? uvResult[0].values[0][0] : 0;
+
+        // Real-time active users (last 5 minutes)
+        const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+        const realtimeResult = db.exec(`SELECT COUNT(DISTINCT uid) FROM visits WHERE timestamp >= '${fiveMinAgo}'`);
+        const realtimeUsers = realtimeResult.length > 0 ? realtimeResult[0].values[0][0] : 0;
+
+        // New vs Returning visitors
+        const allUidsResult = db.exec(`SELECT uid, MIN(timestamp) as first_visit FROM visits WHERE uid IS NOT NULL GROUP BY uid`);
+        let newVisitors = 0, returningVisitors = 0;
+        if (allUidsResult.length > 0) {
+            allUidsResult[0].values.forEach(row => {
+                const firstVisit = new Date(row[1]);
+                const start = new Date(startDate);
+                if (firstVisit >= start) newVisitors++;
+                else returningVisitors++;
+            });
+        }
 
         // Last hour traffic by minute
         const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
         const trendResult = db.exec(`
-      SELECT 
-        strftime('%Y-%m-%d %H:%M', timestamp) as minute,
-        COUNT(*) as count
-      FROM visits
-      WHERE timestamp >= '${oneHourAgo}'
-      GROUP BY minute
-      ORDER BY minute ASC
-    `);
-
+          SELECT strftime('%Y-%m-%d %H:%M', timestamp) as minute, COUNT(*) as count
+          FROM visits WHERE timestamp >= '${oneHourAgo}'
+          GROUP BY minute ORDER BY minute ASC
+        `);
         const minuteTrend = trendResult.length > 0
-            ? trendResult[0].values.map(row => ({ minute: row[0], count: row[1] }))
-            : [];
+            ? trendResult[0].values.map(row => ({ minute: row[0], count: row[1] })) : [];
 
-        // Today's traffic by hour
-        const todayStart = new Date();
-        todayStart.setHours(0, 0, 0, 0);
-        const hourlyResult = db.exec(`
-      SELECT 
-        strftime('%H', timestamp) as hour,
-        COUNT(*) as count
-      FROM visits
-      WHERE timestamp >= '${todayStart.toISOString()}'
-      GROUP BY hour
-      ORDER BY hour ASC
-    `);
-
-        const hourlyTrend = hourlyResult.length > 0
-            ? hourlyResult[0].values.map(row => ({ hour: row[0], count: row[1] }))
-            : [];
+        // Hourly/Daily trend based on range
+        let hourlyTrend = [];
+        if (range === 'today') {
+            const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
+            const hourlyResult = db.exec(`
+              SELECT strftime('%H', timestamp) as hour, COUNT(*) as count
+              FROM visits WHERE timestamp >= '${todayStart.toISOString()}'
+              GROUP BY hour ORDER BY hour ASC
+            `);
+            hourlyTrend = hourlyResult.length > 0
+                ? hourlyResult[0].values.map(row => ({ hour: row[0], count: row[1] })) : [];
+        } else {
+            // Daily trend for week/month
+            const dailyResult = db.exec(`
+              SELECT strftime('%m-%d', timestamp) as day, COUNT(*) as count
+              FROM visits WHERE ${dateFilter}
+              GROUP BY day ORDER BY day ASC
+            `);
+            hourlyTrend = dailyResult.length > 0
+                ? dailyResult[0].values.map(row => ({ hour: row[0], count: row[1] })) : [];
+        }
 
         // Top pages
         const topPagesResult = db.exec(`
-      SELECT url, COUNT(*) as count
-      FROM visits
-      WHERE url IS NOT NULL
-      GROUP BY url
-      ORDER BY count DESC
-      LIMIT 10
-    `);
-
+          SELECT url, COUNT(*) as count FROM visits
+          WHERE url IS NOT NULL AND ${dateFilter}
+          GROUP BY url ORDER BY count DESC LIMIT 10
+        `);
         const topPages = topPagesResult.length > 0
-            ? topPagesResult[0].values.map(row => ({ url: row[0], count: row[1] }))
-            : [];
+            ? topPagesResult[0].values.map(row => ({ url: row[0], count: row[1] })) : [];
 
         // Top referrers
         const topReferrersResult = db.exec(`
-      SELECT referrer, COUNT(*) as count
-      FROM visits
-      WHERE referrer IS NOT NULL AND referrer != ''
-      GROUP BY referrer
-      ORDER BY count DESC
-      LIMIT 10
-    `);
-
+          SELECT referrer, COUNT(*) as count FROM visits
+          WHERE referrer IS NOT NULL AND referrer != '' AND ${dateFilter}
+          GROUP BY referrer ORDER BY count DESC LIMIT 10
+        `);
         const topReferrers = topReferrersResult.length > 0
-            ? topReferrersResult[0].values.map(row => ({ referrer: row[0], count: row[1] }))
-            : [];
+            ? topReferrersResult[0].values.map(row => ({ referrer: row[0], count: row[1] })) : [];
+
+        // Device/Browser stats
+        const deviceStats = { desktop: 0, mobile: 0, tablet: 0 };
+        const browserStats = {};
+        const osStats = {};
+        const uaResult = db.exec(`SELECT user_agent FROM visits WHERE user_agent IS NOT NULL AND ${dateFilter}`);
+        if (uaResult.length > 0) {
+            uaResult[0].values.forEach(row => {
+                const ua = row[0] || '';
+                // Device
+                if (/mobile|android|iphone/i.test(ua) && !/tablet|ipad/i.test(ua)) deviceStats.mobile++;
+                else if (/tablet|ipad/i.test(ua)) deviceStats.tablet++;
+                else deviceStats.desktop++;
+                // Browser
+                let browser = 'Other';
+                if (/chrome/i.test(ua) && !/edge/i.test(ua)) browser = 'Chrome';
+                else if (/safari/i.test(ua) && !/chrome/i.test(ua)) browser = 'Safari';
+                else if (/firefox/i.test(ua)) browser = 'Firefox';
+                else if (/edge/i.test(ua)) browser = 'Edge';
+                browserStats[browser] = (browserStats[browser] || 0) + 1;
+                // OS
+                let os = 'Other';
+                if (/windows/i.test(ua)) os = 'Windows';
+                else if (/mac os/i.test(ua)) os = 'macOS';
+                else if (/linux/i.test(ua) && !/android/i.test(ua)) os = 'Linux';
+                else if (/android/i.test(ua)) os = 'Android';
+                else if (/iphone|ipad|ios/i.test(ua)) os = 'iOS';
+                osStats[os] = (osStats[os] || 0) + 1;
+            });
+        }
+
+        // Traffic Channels
+        const channels = { direct: 0, search: 0, social: 0, referral: 0 };
+        const refResult = db.exec(`SELECT referrer FROM visits WHERE ${dateFilter}`);
+        if (refResult.length > 0) {
+            refResult[0].values.forEach(row => {
+                const ref = (row[0] || '').toLowerCase();
+                if (!ref || ref === 'direct') channels.direct++;
+                else if (/google|bing|baidu|yahoo|duckduckgo|yandex/.test(ref)) channels.search++;
+                else if (/facebook|twitter|instagram|linkedin|tiktok|weibo|wechat/.test(ref)) channels.social++;
+                else channels.referral++;
+            });
+        }
+
+        // Entry pages (first page of each session)
+        const entryResult = db.exec(`
+          SELECT url, COUNT(*) as count FROM (
+            SELECT uid, MIN(timestamp), url FROM visits 
+            WHERE uid IS NOT NULL AND url IS NOT NULL AND ${dateFilter}
+            GROUP BY uid
+          ) GROUP BY url ORDER BY count DESC LIMIT 5
+        `);
+        const entryPages = entryResult.length > 0
+            ? entryResult[0].values.map(row => ({ url: row[0], count: row[1] })) : [];
+
+        // Exit pages (last page of each session)
+        const exitResult = db.exec(`
+          SELECT url, COUNT(*) as count FROM (
+            SELECT uid, MAX(timestamp), url FROM visits 
+            WHERE uid IS NOT NULL AND url IS NOT NULL AND ${dateFilter}
+            GROUP BY uid
+          ) GROUP BY url ORDER BY count DESC LIMIT 5
+        `);
+        const exitPages = exitResult.length > 0
+            ? exitResult[0].values.map(row => ({ url: row[0], count: row[1] })) : [];
 
         res.json({
-            pv,
-            uv,
-            minuteTrend,
-            hourlyTrend,
-            topPages,
-            topReferrers
+            pv, uv, realtimeUsers,
+            newVisitors, returningVisitors,
+            minuteTrend, hourlyTrend,
+            topPages, topReferrers,
+            deviceStats, browserStats, osStats,
+            channels, entryPages, exitPages,
+            dateRange: { start: startDate, end: endDate, range }
         });
 
     } catch (error) {
