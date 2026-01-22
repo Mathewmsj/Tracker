@@ -1,94 +1,67 @@
 # User Behavior Tracking and Analytics System
+
 ## IEEE Format Technical Report
 
 ---
 
-### Abstract
+**Abstract** — This paper presents a lightweight, self-hosted User Behavior Tracking and Analytics System providing real-time website analytics including page view tracking, unique visitor identification, user journey visualization via Sankey diagrams, device/browser analysis, and traffic channel classification. Built with Node.js, Express.js, and SQLite, the system offers comprehensive PV/UV metrics with interactive visualizations.
 
-This paper presents the design and implementation of a lightweight, self-hosted User Behavior Tracking and Analytics System. The system provides real-time website analytics capabilities including page view tracking, unique visitor identification, user journey visualization, and comprehensive traffic analysis. Built using Node.js, Express.js, and SQLite, the system offers a modern dashboard with interactive visualizations including Sankey diagrams for user flow analysis. The solution demonstrates a complete end-to-end implementation from frontend event instrumentation to backend data processing and visualization.
-
-**Keywords**: Web Analytics, User Behavior Tracking, Event Instrumentation, Data Visualization, Sankey Diagram
+**Keywords**: Web Analytics, User Tracking, Sankey Diagram, Data Visualization, SPA Tracking
 
 ---
 
 ## I. Introduction
 
-Understanding user behavior on websites is crucial for improving user experience and business outcomes. Commercial analytics solutions like Google Analytics, while powerful, raise privacy concerns and may not meet specific customization needs. This project implements a self-hosted analytics system that provides essential tracking capabilities while maintaining full data ownership.
-
-The system addresses the following objectives:
-- Track page views and unique visitors across websites
-- Capture user navigation patterns and session flows
-- Provide real-time visualization of traffic data
-- Support Single Page Application (SPA) tracking
-- Enable cross-origin tracking for external website integration
+Understanding user behavior is crucial for optimizing web experiences. This project implements a complete self-hosted analytics solution with:
+- Real-time traffic monitoring
+- Device/browser/OS distribution analysis
+- Traffic channel classification (Direct/Search/Social/Referral)
+- User flow visualization with configurable depth
+- Full SPA (Single Page Application) support
 
 ---
 
 ## II. System Architecture
 
-### A. Overall Architecture
-
-The system follows a classic three-tier architecture consisting of:
-
-1. **Data Collection Layer**: JavaScript SDK embedded in client websites
-2. **Backend Processing Layer**: Node.js/Express.js server handling data ingestion and API requests
-3. **Data Storage Layer**: SQLite database for persistent storage
-4. **Presentation Layer**: Web-based dashboard with interactive visualizations
+### A. Three-Tier Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                     Client Websites                              │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐              │
-│  │  Website A  │  │  Website B  │  │  Website C  │              │
-│  │ (analytics  │  │ (analytics  │  │ (analytics  │              │
-│  │   SDK)      │  │   SDK)      │  │   SDK)      │              │
-│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘              │
-└─────────┼────────────────┼────────────────┼─────────────────────┘
-          │                │                │
-          │    HTTPS/HTTP Requests          │
-          ▼                ▼                ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                    Analytics Server                              │
-│  ┌─────────────────────────────────────────────────────────┐    │
-│  │                  Express.js Backend                      │    │
-│  │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐ │    │
-│  │  │ /collect │  │/api/stats│  │/api/flow │  │/api/clear│ │    │
-│  │  │  (Track) │  │ (Stats)  │  │ (Sankey) │  │ (Admin)  │ │    │
-│  │  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘ │    │
-│  └───────┼─────────────┼─────────────┼─────────────┼───────┘    │
-│          │             │             │             │            │
-│          ▼             ▼             ▼             ▼            │
-│  ┌─────────────────────────────────────────────────────────┐    │
-│  │                 SQLite Database (sql.js)                │    │
-│  │              visits table: timestamp, ip,               │    │
-│  │           user_agent, uid, url, referrer, ...           │    │
-│  └─────────────────────────────────────────────────────────┘    │
-└─────────────────────────────────────────────────────────────────┘
-          │
-          ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                     Dashboard (Frontend)                         │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐        │
-│  │  Stats   │  │  Charts  │  │  Sankey  │  │ Visitors │        │
-│  │  Cards   │  │ (Chart.js)│  │ (ECharts)│  │  Table   │        │
-│  └──────────┘  └──────────┘  └──────────┘  └──────────┘        │
-└─────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│                   Client Websites                        │
+│   [Analytics SDK] ──── HTTPS ────▶ /collect endpoint    │
+└─────────────────────────────────────────────────────────┘
+                            │
+                            ▼
+┌─────────────────────────────────────────────────────────┐
+│                  Analytics Server                        │
+│  ┌─────────────────────────────────────────────────┐    │
+│  │              Express.js Backend                  │    │
+│  │  /collect  /api/stats  /api/flow  /api/visitors │    │
+│  └─────────────────────────────────────────────────┘    │
+│                         │                                │
+│  ┌─────────────────────────────────────────────────┐    │
+│  │          SQLite Database (sql.js)               │    │
+│  └─────────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────┘
+                            │
+                            ▼
+┌─────────────────────────────────────────────────────────┐
+│                 Dashboard (Frontend)                     │
+│  Stats Cards │ Charts │ Sankey │ Visitors Table         │
+└─────────────────────────────────────────────────────────┘
 ```
 
 ### B. Technology Stack
 
-| Component | Technology | Purpose |
-|-----------|------------|---------|
-| Backend Runtime | Node.js 18+ | JavaScript server environment |
-| Web Framework | Express.js 4.x | HTTP request handling, routing |
-| Database | sql.js (SQLite) | In-memory database with file persistence |
-| Frontend Charts | Chart.js 4.x | Line and bar chart visualizations |
-| Sankey Diagram | ECharts 5.x | User flow visualization |
-| Styling | CSS3 | Modern glassmorphism design |
+| Component | Technology |
+|-----------|------------|
+| Runtime | Node.js 18+ |
+| Framework | Express.js 4.x |
+| Database | sql.js (SQLite) |
+| Charts | Chart.js 4.x |
+| Flow Diagram | ECharts 5.x |
 
 ### C. Database Schema
-
-The system uses a single `visits` table to store all tracking events:
 
 ```sql
 CREATE TABLE visits (
@@ -104,296 +77,144 @@ CREATE TABLE visits (
 )
 ```
 
-**Field Descriptions:**
-- `timestamp`: ISO 8601 formatted datetime of the event
-- `ip`: Client IP address (supports proxy headers)
-- `user_agent`: Browser user agent string
-- `uid`: Unique visitor identifier (UUID v4, stored in localStorage)
-- `url`: Page path being visited
-- `referrer`: Previous page or external referrer
-- `event_type`: Type of event (default: pageview)
-- `meta_data`: JSON string containing additional metadata
-
 ---
 
 ## III. API Design
 
-### A. Data Collection Endpoint
+### A. Data Collection — GET /collect
 
-**GET /collect**
+**Parameters:**
+| Param | Type | Description |
+|-------|------|-------------|
+| uid | string | Unique visitor ID |
+| url | string | Page path |
+| referrer | string | Referrer URL |
 
-Receives tracking data from client websites and returns a 1x1 transparent GIF pixel.
+**Response:** 1x1 transparent GIF
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| uid | string | Yes | Unique visitor identifier |
-| url | string | Yes | Current page path |
-| referrer | string | No | Referrer URL |
-| event_type | string | No | Event type (default: pageview) |
-| meta_data | string | No | JSON metadata |
+### B. Statistics — GET /api/stats
 
-**Response**: 1x1 transparent GIF (Content-Type: image/gif)
+**Query Parameters:**
+| Param | Values | Description |
+|-------|--------|-------------|
+| range | today/week/month/all | Date filter |
 
-**Example Request**:
-```
-GET /collect?uid=abc-123&url=/products&referrer=https://google.com
-```
-
-### B. Statistics Endpoint
-
-**GET /api/stats**
-
-Returns aggregated analytics data for dashboard display.
-
-**Response Format**:
+**Response Structure:**
 ```json
 {
-    "pv": 1523,
-    "uv": 342,
-    "minuteTrend": [
-        {"minute": "2026-01-22 09:01", "count": 5},
-        {"minute": "2026-01-22 09:02", "count": 8}
-    ],
-    "hourlyTrend": [
-        {"hour": "09", "count": 45},
-        {"hour": "10", "count": 62}
-    ],
-    "topPages": [
-        {"url": "/products", "count": 234},
-        {"url": "/", "count": 189}
-    ],
-    "topReferrers": [
-        {"referrer": "https://google.com", "count": 89},
-        {"referrer": "direct", "count": 156}
-    ]
+  "pv": 1523, "uv": 342,
+  "realtimeUsers": 5,
+  "newVisitors": 120, "returningVisitors": 222,
+  "deviceStats": { "pv": {...}, "uv": {...} },
+  "browserStats": { "pv": {...}, "uv": {...} },
+  "channels": { "pv": {...}, "uv": {...} },
+  "topPages": { "pv": [...], "uv": [...] },
+  "entryPages": [...], "exitPages": [...]
 }
 ```
 
-### C. Flow Visualization Endpoint
+### C. User Flow — GET /api/flow
 
-**GET /api/flow**
+| Param | Default | Description |
+|-------|---------|-------------|
+| maxLayers | 5 | Navigation depth (1-10) |
 
-Returns user navigation flow data for Sankey diagram visualization.
+Returns Sankey diagram nodes and links.
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| maxLayers | integer | 5 | Maximum depth of navigation layers (1-10) |
+### D. Visitors — GET /api/visitors
 
-**Response Format**:
-```json
-{
-    "nodes": [
-        {"name": "入口"},
-        {"name": "外部来源"},
-        {"name": "L1: /"},
-        {"name": "L2: /products"}
-    ],
-    "links": [
-        {"source": "入口", "target": "L1: /", "value": 45},
-        {"source": "L1: /", "target": "L2: /products", "value": 23}
-    ],
-    "maxLayers": 5,
-    "totalSessions": 156
-}
-```
+Returns recent visitor records with parsed device information.
 
-### D. Visitors Endpoint
+### E. Clear Data — DELETE /api/clear
 
-**GET /api/visitors**
-
-Returns recent visitor records with device information.
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| limit | integer | 50 | Number of records (max 100) |
-
-**Response Format**:
-```json
-{
-    "visitors": [
-        {
-            "timestamp": "2026-01-22T09:15:30.000Z",
-            "ip": "218.108.205.132",
-            "uid": "abc-def-123",
-            "url": "/products",
-            "referrer": "https://google.com",
-            "userAgent": "Mozilla/5.0...",
-            "device": {
-                "type": "desktop",
-                "browser": "Chrome",
-                "os": "Windows"
-            }
-        }
-    ],
-    "uniqueIPs": ["218.108.205.132", "123.45.67.89"]
-}
-```
-
-### E. Data Clear Endpoint
-
-**DELETE /api/clear**
-
-Clears all tracking data from the database. Requires confirmation parameter.
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| confirm | string | Yes | Must be "yes-delete-all-data" |
-
-**Response Format**:
-```json
-{
-    "success": true,
-    "message": "All data has been cleared",
-    "timestamp": "2026-01-22T09:30:00.000Z"
-}
-```
+Requires `?confirm=yes-delete-all-data` for confirmation.
 
 ---
 
-## IV. Frontend Event Tracking Method
+## IV. Frontend Event Tracking
 
-### A. Tracking SDK Overview
-
-The analytics SDK is a lightweight JavaScript snippet (~2KB) that automatically captures user behavior without requiring manual instrumentation.
-
-### B. User Identification
-
-Each visitor is assigned a unique identifier (UUID v4) stored in localStorage:
+### A. User Identification
 
 ```javascript
-var uid = localStorage.getItem('_uid') || (function() {
-    var id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        var r = Math.random() * 16 | 0;
-        return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-    });
-    localStorage.setItem('_uid', id);
-    return id;
-})();
+var uid = localStorage.getItem('_uid') || generateUUID();
+localStorage.setItem('_uid', uid);
 ```
 
-This approach ensures:
-- Persistent identification across sessions
-- No cookies required (privacy-friendly)
-- Automatic regeneration if storage is cleared
+### B. Event Triggers
 
-### C. Event Triggering Logic
-
-The SDK tracks the following events automatically:
-
-| Event | Trigger | Data Captured |
+| Event | Trigger | Captured Data |
 |-------|---------|---------------|
-| Page View | Page load complete | URL, referrer, timestamp |
-| SPA Navigation | Hash change | New path, previous path |
-| History Navigation | pushState/replaceState | New URL, previous URL |
-| Back/Forward | popstate event | Current URL |
+| Page View | window.load | URL, referrer, timestamp |
+| SPA Route | hashchange | New path, previous path |
+| History | pushState/popstate | URL changes |
 
-### D. SPA (Single Page Application) Support
+### C. SPA Support
 
-Modern SPAs don't trigger full page reloads. The SDK intercepts routing events:
+The SDK intercepts `history.pushState`, `history.replaceState`, and listens for `popstate` and `hashchange` events to track all navigation in Single Page Applications.
 
-```javascript
-// Hash change detection (Vue Router hash mode)
-window.addEventListener('hashchange', function() {
-    track(lastPath);
-});
-
-// History API interception
-var origPush = history.pushState;
-history.pushState = function() {
-    origPush.apply(this, arguments);
-    setTimeout(function() { track(lastPath); }, 0);
-};
-
-window.addEventListener('popstate', function() {
-    track(lastPath);
-});
-```
-
-### E. Data Transmission
-
-Events are sent using the Fetch API with `no-cors` mode to support cross-origin tracking:
+### D. Data Transmission
 
 ```javascript
-fetch(url, {
-    mode: 'no-cors',
-    credentials: 'omit'
-}).then(function() {
-    console.log('📊 Tracked:', currentPath);
-});
+fetch(url, { mode: 'no-cors', credentials: 'omit' });
 ```
 
-This method:
-- Avoids CORS preflight requests
-- Works across different domains
-- Supports HTTPS to HTTP communication
+Uses `no-cors` mode for cross-origin compatibility.
 
 ---
 
-## V. Data Visualization and Interpretation
+## V. Data Visualization
 
-### A. Dashboard Overview
+### A. Key Metrics (6 Cards)
 
-The analytics dashboard provides a comprehensive view of website traffic through multiple visualization components.
+| Metric | Insight |
+|--------|---------|
+| **PV** | Total content consumption |
+| **UV** | Actual audience size |
+| **New Visitors** | First-time users |
+| **Returning** | Repeat visitors |
+| **Depth** | Pages per visit |
+| **Bounce Rate** | Single-page exits |
 
-### B. Key Metrics Cards
+### B. PV/UV Toggle Feature
 
-Four primary metrics are displayed prominently:
+Device, browser, channel, and page statistics support switching between:
+- **PV Mode**: Counts every page view
+- **UV Mode**: Counts unique visitors only
 
-| Metric | Calculation | Insight |
-|--------|-------------|---------|
-| **Page Views (PV)** | COUNT(*) from visits | Total content consumption |
-| **Unique Visitors (UV)** | COUNT(DISTINCT uid) | Actual audience size |
-| **Visit Depth** | PV / UV | Content engagement level |
-| **Bounce Rate** | Estimated from depth | Single-page visit percentage |
+### C. Date Range Selector
 
-**Interpretation**: A high PV with low UV indicates returning visitors. High visit depth (>3) suggests engaging content. High bounce rate (>60%) may indicate content-audience mismatch.
+| Option | Data Shown |
+|--------|------------|
+| 今日 (Today) | Hourly breakdown |
+| 本周 (Week) | Daily trend |
+| 本月 (Month) | Daily trend |
+| 全部 (All) | All historical data |
 
-### C. Traffic Trend Visualizations
+### D. Sankey Diagram
 
-#### Real-time Trend (Line Chart)
-- **Data**: Page views per minute for the last hour
-- **Purpose**: Identify traffic spikes and patterns
-- **Insight**: Sudden spikes may indicate viral content or marketing campaign effects
+Visualizes user navigation paths with:
+- Configurable layers (1-8)
+- Entry sources: Direct, External, Internal
+- Flow width proportional to user count
+- Interactive tooltips
 
-#### Hourly Distribution (Bar Chart)
-- **Data**: Page views aggregated by hour
-- **Purpose**: Understand peak traffic times
-- **Insight**: Helps optimize server resources and content publishing schedules
+**Insights:**
+- Identify drop-off points
+- Discover popular paths
+- Analyze conversion funnels
 
-### D. Sankey Diagram (User Flow)
+### E. Traffic Channels
 
-The Sankey diagram visualizes user navigation patterns across multiple layers:
+| Channel | Detection |
+|---------|-----------|
+| Direct | Empty/no referrer |
+| Search | Google, Bing, Baidu, etc. |
+| Social | Facebook, Twitter, WeChat, etc. |
+| Referral | Other external links |
 
-**Components**:
-- **Entry Nodes**: "入口" (direct), "外部来源" (external referrer)
-- **Layer Nodes**: L1, L2, L3... representing navigation depth
-- **Flow Width**: Proportional to number of users taking that path
+### F. Real-time Indicator
 
-**Layer Control**: Users can adjust visible layers (1-8) using interactive buttons.
-
-**Insights from Sankey**:
-1. **Drop-off Points**: Where flow narrows significantly indicates high exit pages
-2. **Popular Paths**: Thick connections show common user journeys
-3. **Conversion Funnels**: Track progression from landing → product → checkout
-4. **Navigation Patterns**: Identify unexpected navigation behaviors
-
-### E. Visitors Table
-
-Displays detailed information for recent visitors:
-
-| Column | Data | Purpose |
-|--------|------|---------|
-| Time | Visit timestamp | Activity timeline |
-| IP | Client IP address | Geographic analysis potential |
-| Page | Visited URL | Content popularity |
-| Device | Browser/OS parsed from UA | Platform optimization |
-| Source | Referrer domain | Traffic source analysis |
-
-### F. Top Pages and Referrers
-
-Ranked tables showing:
-- **Top Pages**: Most visited URLs - identifies popular content
-- **Top Referrers**: Traffic sources - shows marketing channel effectiveness
+Displays users active in the last 5 minutes.
 
 ---
 
@@ -401,68 +222,48 @@ Ranked tables showing:
 
 ### A. Server Configuration
 
-The system is deployed on server `110.40.153.38` with the following configuration:
+- **Server:** 110.40.153.38
+- **Domain:** mathew-tracker.yunguhs.com
+- **Port:** 8811
+- **Process Manager:** pm2
 
-- **Domain**: mathew-tracker.yunguhs.com
-- **Port**: 8811
-- **Process Manager**: nohup for background execution
-- **Reverse Proxy**: Nginx (configured by server administrator)
+### B. Live URLs
 
-### B. Deployment Steps
-
-```bash
-# Clone repository
-git clone https://github.com/Mathewmsj/Tracker.git
-
-# Install dependencies
-cd Tracker && npm install
-
-# Start server in background
-nohup node server.js > server.log 2>&1 &
-```
-
-### C. Live URLs
-
-- **Dashboard**: https://mathew-tracker.yunguhs.com/dashboard.html
-- **API Stats**: https://mathew-tracker.yunguhs.com/api/stats
-- **GitHub Repository**: https://github.com/Mathewmsj/Tracker
+| Resource | URL |
+|----------|-----|
+| Dashboard | https://mathew-tracker.yunguhs.com/dashboard.html |
+| GitHub | https://github.com/Mathewmsj/Tracker |
 
 ---
 
 ## VII. Conclusion
 
-This project successfully implements a complete User Behavior Tracking and Analytics System that meets all specified requirements:
+This system provides comprehensive analytics capabilities comparable to commercial solutions:
 
-1. **Complete Source Code**: Available on GitHub with clear structure and meaningful commits
-2. **Production Deployment**: Accessible and functional on the designated server
-3. **Core Features**: Page view tracking, unique visitor identification, user flow analysis
-4. **Advanced Features**: SPA support, real-time updates, interactive Sankey diagram with layer controls
+✅ Real-time traffic monitoring  
+✅ Device/browser/OS analysis with PV/UV toggle  
+✅ Traffic channel classification  
+✅ User flow Sankey visualization  
+✅ Full SPA support  
+✅ Date range filtering  
+✅ Entry/exit page analysis
 
-The system demonstrates practical application of web development technologies including Node.js, Express.js, SQLite, Chart.js, and ECharts. The modular architecture allows for easy extension and customization.
-
-**Future Improvements**:
-- IP-based geolocation with map visualization
-- Event-based tracking (clicks, form submissions)
+**Future Enhancements:**
+- IP geolocation mapping
+- Session replay
+- Custom event tracking
 - A/B testing integration
-- Data export functionality
-- User session replay
 
 ---
 
 ## References
 
-[1] Express.js Documentation, https://expressjs.com/
-
-[2] Chart.js Documentation, https://www.chartjs.org/docs/
-
-[3] Apache ECharts Documentation, https://echarts.apache.org/en/index.html
-
-[4] SQL.js Project, https://sql.js.org/
-
-[5] MDN Web Docs - History API, https://developer.mozilla.org/en-US/docs/Web/API/History_API
+[1] Express.js, https://expressjs.com/  
+[2] Chart.js, https://www.chartjs.org/  
+[3] Apache ECharts, https://echarts.apache.org/  
+[4] SQL.js, https://sql.js.org/
 
 ---
 
-*Report prepared by: Mathew (Sijia Ma)*
+*Author: Sijia Ma (Mathew)*  
 *Date: January 22, 2026*
-*Course: Final Project - User Behavior Tracking*
