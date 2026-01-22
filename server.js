@@ -220,14 +220,114 @@ app.get('/api/stats', (req, res) => {
                 ? dailyResult[0].values.map(row => ({ hour: row[0], count: row[1] })) : [];
         }
 
-        // Top pages
-        const topPagesResult = db.exec(`
+        // Device/Browser stats - PV based
+        const deviceStatsPV = { desktop: 0, mobile: 0, tablet: 0 };
+        const browserStatsPV = {};
+        const osStatsPV = {};
+        const uaResult = db.exec(`SELECT user_agent FROM visits WHERE user_agent IS NOT NULL AND ${dateFilter}`);
+        if (uaResult.length > 0) {
+            uaResult[0].values.forEach(row => {
+                const ua = row[0] || '';
+                if (/mobile|android|iphone/i.test(ua) && !/tablet|ipad/i.test(ua)) deviceStatsPV.mobile++;
+                else if (/tablet|ipad/i.test(ua)) deviceStatsPV.tablet++;
+                else deviceStatsPV.desktop++;
+                let browser = 'Other';
+                if (/chrome/i.test(ua) && !/edge/i.test(ua)) browser = 'Chrome';
+                else if (/safari/i.test(ua) && !/chrome/i.test(ua)) browser = 'Safari';
+                else if (/firefox/i.test(ua)) browser = 'Firefox';
+                else if (/edge/i.test(ua)) browser = 'Edge';
+                browserStatsPV[browser] = (browserStatsPV[browser] || 0) + 1;
+                let os = 'Other';
+                if (/windows/i.test(ua)) os = 'Windows';
+                else if (/mac os/i.test(ua)) os = 'macOS';
+                else if (/linux/i.test(ua) && !/android/i.test(ua)) os = 'Linux';
+                else if (/android/i.test(ua)) os = 'Android';
+                else if (/iphone|ipad|ios/i.test(ua)) os = 'iOS';
+                osStatsPV[os] = (osStatsPV[os] || 0) + 1;
+            });
+        }
+
+        // Device/Browser stats - UV based (by unique uid)
+        const deviceStatsUV = { desktop: 0, mobile: 0, tablet: 0 };
+        const browserStatsUV = {};
+        const osStatsUV = {};
+        const uaUVResult = db.exec(`
+          SELECT user_agent FROM (
+            SELECT uid, user_agent FROM visits 
+            WHERE user_agent IS NOT NULL AND uid IS NOT NULL AND ${dateFilter}
+            GROUP BY uid
+          )
+        `);
+        if (uaUVResult.length > 0) {
+            uaUVResult[0].values.forEach(row => {
+                const ua = row[0] || '';
+                if (/mobile|android|iphone/i.test(ua) && !/tablet|ipad/i.test(ua)) deviceStatsUV.mobile++;
+                else if (/tablet|ipad/i.test(ua)) deviceStatsUV.tablet++;
+                else deviceStatsUV.desktop++;
+                let browser = 'Other';
+                if (/chrome/i.test(ua) && !/edge/i.test(ua)) browser = 'Chrome';
+                else if (/safari/i.test(ua) && !/chrome/i.test(ua)) browser = 'Safari';
+                else if (/firefox/i.test(ua)) browser = 'Firefox';
+                else if (/edge/i.test(ua)) browser = 'Edge';
+                browserStatsUV[browser] = (browserStatsUV[browser] || 0) + 1;
+                let os = 'Other';
+                if (/windows/i.test(ua)) os = 'Windows';
+                else if (/mac os/i.test(ua)) os = 'macOS';
+                else if (/linux/i.test(ua) && !/android/i.test(ua)) os = 'Linux';
+                else if (/android/i.test(ua)) os = 'Android';
+                else if (/iphone|ipad|ios/i.test(ua)) os = 'iOS';
+                osStatsUV[os] = (osStatsUV[os] || 0) + 1;
+            });
+        }
+
+        // Traffic Channels - PV based
+        const channelsPV = { direct: 0, search: 0, social: 0, referral: 0 };
+        const refResult = db.exec(`SELECT referrer FROM visits WHERE ${dateFilter}`);
+        if (refResult.length > 0) {
+            refResult[0].values.forEach(row => {
+                const ref = (row[0] || '').toLowerCase();
+                if (!ref || ref === 'direct') channelsPV.direct++;
+                else if (/google|bing|baidu|yahoo|duckduckgo|yandex/.test(ref)) channelsPV.search++;
+                else if (/facebook|twitter|instagram|linkedin|tiktok|weibo|wechat/.test(ref)) channelsPV.social++;
+                else channelsPV.referral++;
+            });
+        }
+
+        // Traffic Channels - UV based
+        const channelsUV = { direct: 0, search: 0, social: 0, referral: 0 };
+        const refUVResult = db.exec(`
+          SELECT referrer FROM (
+            SELECT uid, referrer FROM visits 
+            WHERE uid IS NOT NULL AND ${dateFilter}
+            GROUP BY uid
+          )
+        `);
+        if (refUVResult.length > 0) {
+            refUVResult[0].values.forEach(row => {
+                const ref = (row[0] || '').toLowerCase();
+                if (!ref || ref === 'direct') channelsUV.direct++;
+                else if (/google|bing|baidu|yahoo|duckduckgo|yandex/.test(ref)) channelsUV.search++;
+                else if (/facebook|twitter|instagram|linkedin|tiktok|weibo|wechat/.test(ref)) channelsUV.social++;
+                else channelsUV.referral++;
+            });
+        }
+
+        // Top pages - PV & UV
+        const topPagesPVResult = db.exec(`
           SELECT url, COUNT(*) as count FROM visits
           WHERE url IS NOT NULL AND ${dateFilter}
           GROUP BY url ORDER BY count DESC LIMIT 10
         `);
-        const topPages = topPagesResult.length > 0
-            ? topPagesResult[0].values.map(row => ({ url: row[0], count: row[1] })) : [];
+        const topPagesPV = topPagesPVResult.length > 0
+            ? topPagesPVResult[0].values.map(row => ({ url: row[0], count: row[1] })) : [];
+
+        const topPagesUVResult = db.exec(`
+          SELECT url, COUNT(DISTINCT uid) as count FROM visits
+          WHERE url IS NOT NULL AND uid IS NOT NULL AND ${dateFilter}
+          GROUP BY url ORDER BY count DESC LIMIT 10
+        `);
+        const topPagesUV = topPagesUVResult.length > 0
+            ? topPagesUVResult[0].values.map(row => ({ url: row[0], count: row[1] })) : [];
 
         // Top referrers
         const topReferrersResult = db.exec(`
@@ -237,49 +337,6 @@ app.get('/api/stats', (req, res) => {
         `);
         const topReferrers = topReferrersResult.length > 0
             ? topReferrersResult[0].values.map(row => ({ referrer: row[0], count: row[1] })) : [];
-
-        // Device/Browser stats
-        const deviceStats = { desktop: 0, mobile: 0, tablet: 0 };
-        const browserStats = {};
-        const osStats = {};
-        const uaResult = db.exec(`SELECT user_agent FROM visits WHERE user_agent IS NOT NULL AND ${dateFilter}`);
-        if (uaResult.length > 0) {
-            uaResult[0].values.forEach(row => {
-                const ua = row[0] || '';
-                // Device
-                if (/mobile|android|iphone/i.test(ua) && !/tablet|ipad/i.test(ua)) deviceStats.mobile++;
-                else if (/tablet|ipad/i.test(ua)) deviceStats.tablet++;
-                else deviceStats.desktop++;
-                // Browser
-                let browser = 'Other';
-                if (/chrome/i.test(ua) && !/edge/i.test(ua)) browser = 'Chrome';
-                else if (/safari/i.test(ua) && !/chrome/i.test(ua)) browser = 'Safari';
-                else if (/firefox/i.test(ua)) browser = 'Firefox';
-                else if (/edge/i.test(ua)) browser = 'Edge';
-                browserStats[browser] = (browserStats[browser] || 0) + 1;
-                // OS
-                let os = 'Other';
-                if (/windows/i.test(ua)) os = 'Windows';
-                else if (/mac os/i.test(ua)) os = 'macOS';
-                else if (/linux/i.test(ua) && !/android/i.test(ua)) os = 'Linux';
-                else if (/android/i.test(ua)) os = 'Android';
-                else if (/iphone|ipad|ios/i.test(ua)) os = 'iOS';
-                osStats[os] = (osStats[os] || 0) + 1;
-            });
-        }
-
-        // Traffic Channels
-        const channels = { direct: 0, search: 0, social: 0, referral: 0 };
-        const refResult = db.exec(`SELECT referrer FROM visits WHERE ${dateFilter}`);
-        if (refResult.length > 0) {
-            refResult[0].values.forEach(row => {
-                const ref = (row[0] || '').toLowerCase();
-                if (!ref || ref === 'direct') channels.direct++;
-                else if (/google|bing|baidu|yahoo|duckduckgo|yandex/.test(ref)) channels.search++;
-                else if (/facebook|twitter|instagram|linkedin|tiktok|weibo|wechat/.test(ref)) channels.social++;
-                else channels.referral++;
-            });
-        }
 
         // Entry pages (first page of each session)
         const entryResult = db.exec(`
@@ -307,9 +364,13 @@ app.get('/api/stats', (req, res) => {
             pv, uv, realtimeUsers,
             newVisitors, returningVisitors,
             minuteTrend, hourlyTrend,
-            topPages, topReferrers,
-            deviceStats, browserStats, osStats,
-            channels, entryPages, exitPages,
+            topPages: { pv: topPagesPV, uv: topPagesUV },
+            topReferrers,
+            deviceStats: { pv: deviceStatsPV, uv: deviceStatsUV },
+            browserStats: { pv: browserStatsPV, uv: browserStatsUV },
+            osStats: { pv: osStatsPV, uv: osStatsUV },
+            channels: { pv: channelsPV, uv: channelsUV },
+            entryPages, exitPages,
             dateRange: { start: startDate, end: endDate, range }
         });
 
